@@ -29,12 +29,17 @@ void resetSelect(){
 	nowSelected->selected = false;
 	nowSelected = &alphabet[0];
 	nowSelected->selected = true;
+	//phrase.str("");
 }
 
 void checkBlink(int blinkStatus){
-	if(blinkStatus == 4)
+	if(blinkStatus == 1) //Right blink
 		click();
 
+	if(blinkStatus == 2){ //Left blink
+		resetSelect();
+		phrase.str("");
+	}
 }
 
 void stepWriter(){

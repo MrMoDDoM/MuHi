@@ -20,14 +20,18 @@ Rect face;
 Mat leftBackground;
 Mat rightBackground;
 
-const int kEyePercentTop = 29;
+const int kEyePercentTop = 31;
 const int kEyePercentSide = 15;
-const int kEyePercentHeight = 25;
+const int kEyePercentHeight = 23;
 const int kEyePercentWidth = 30;
 
 const float STABILITY_THRESHOLD = 5.0;
 
 bool faceMoved = true;
+
+int leftCount = 0, rightCount = 0, leftJustBlink = 0, rightJustBlink = 0;
+
+bool leftIsClosed, rightIsClosed;
 
 int initCamWorker() {
 
@@ -53,6 +57,7 @@ void getFrame(Mat *in){
 		printf("No frame!\n");
 	}
 
+	flip( *in, *in, 1);
 }
 
 Rect detectFace( Mat *in ){
@@ -83,9 +88,9 @@ void checkStability(Rect *newer, Rect *old){
 		//If the diff is higher than the treshold, we update 'face' to move toward the new result
 		old->x = (newer->x + old->x) / 2;
 		old->y = (newer->y + old->y) / 2;
-		faceMoved = true;
+		//faceMoved = true;
 	} else { //We must know when the face has moved
-		faceMoved = false;
+		//faceMoved = false;
 	}
 
 	//Bottom right corner (using h&w)
@@ -93,9 +98,9 @@ void checkStability(Rect *newer, Rect *old){
 	if(diff > STABILITY_THRESHOLD){
 		old->width = ( old->width + newer->width) / 2;
 		old->height = ( old->height + newer->height) / 2;
-		faceMoved = true;
+		//faceMoved = true;
 	} else { //Same as above
-		faceMoved = false;
+		//faceMoved = false;
 	}
 }
 
@@ -233,33 +238,45 @@ bool searchHis(Mat *in){
 		}
 	}*/
 
-	//media = media / (i+j);
+	//Varianza
+	int varianza = 0;
 
+	for(q = 0; q < in->cols; q++)
+			varianza += (array[q] - media) * (array[q] - media);
+
+	varianza = varianza / i;
+
+	//std::cout<<"Media: "<< media << " -Varianza: "<< varianza << std::endl;
 
 	//From now on, we have the vector 'array' that contains the data info about the 'histogram'
-	index_left = in->cols/3;
-	index_right = 2 * index_left;
-
-	int sum_ext = 0, sum_int = 0;
-
-	for(q = index_left; q < index_right; q++){
-		sum_int += array[q];
-	}
-
-	for(q = 5; q < index_left; q ++){
-		sum_ext += array[q];
-	}
-
-	for(q = index_right; q < in->cols-5; q ++){
-		sum_ext += array[q];
-	}
+//	index_left = in->cols/3;
+//	index_right = 2 * index_left;
+//
+//	int sum_ext = 0, sum_int = 0;
+//
+//	for(q = index_left; q < index_right; q++){
+//		sum_int += array[q];
+//	}
+//
+//	for(q = 5; q < index_left; q ++){
+//		sum_ext += array[q];
+//	}
+//
+//	for(q = index_right; q < in->cols-5; q ++){
+//		sum_ext += array[q];
+//	}
 
 //	std::cout<<"Ext: "<< sum_ext << " - Int: " << sum_int<< std::endl;
 //	std::cout<<"Index_lef: "<< index_left << " - Index_right: "<< index_right << std::endl;
 
 	//False if OPEN
 	//True if CLOSED
-	if(sum_int > sum_ext){
+//	if(sum_int > sum_ext){
+//		return false;
+//	} else return true;
+
+
+	if(varianza >= 15){
 		return false;
 	} else return true;
 
@@ -316,8 +333,13 @@ int detectBlink(Mat *in){
 	Mat tempROI = frame_gray(leftEyeRegion);
 	Rect temp = detectEye(&tempROI, &eyes_cascade_left);
 	if(temp.area() != 0 ){
+
 		temp.x += leftEyeRegion.x;
 		temp.y += leftEyeRegion.y;
+
+//		temp.width -= temp.width/5;
+//		temp.height -= temp.height/5;
+
 		leftEyeROI = frame_gray(temp);
 		imshow("Prova sinistra", leftEyeROI);
 
@@ -361,37 +383,49 @@ int detectBlink(Mat *in){
 
 	if(!leftEyeROI.empty()){
 		Mat temp;
-		threshold( leftEyeROI, leftEyeROI, 60, 255, 0 );
+		threshold( leftEyeROI, leftEyeROI, 50, 255, 0 );
 		resize(leftEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
-		threshold( temp, temp, 60, 255, 0 );
+		threshold( temp, temp, 70, 255, 0 );
 		leftBlink = searchHis(&temp);
 		imshow("Threshold L", temp);
 	}
 
 	if(!rightEyeROI.empty()){
 		Mat temp;
-		threshold( rightEyeROI, rightEyeROI, 60, 255, 0 );
+		threshold( rightEyeROI, rightEyeROI, 50, 255, 0 );
 		resize(rightEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
-		threshold( temp, temp, 60, 255, 0 );
+		threshold( temp, temp, 70, 255, 0 );
 		rightBlink = searchHis(&temp);
 		imshow("Threshold R", temp);
 	}
 
-//	if(leftBlink)
-//		std::cout<<"Right blinked!"<<std::endl;
-//
-//	if(rightBlink)
-//		std::cout<<"Left blinked!"<<std::endl;
+	int blinkThresh = 5;
 
 	if(leftBlink && rightBlink){
-		return 3;
-	} else if (leftBlink && !rightBlink){
-		return 2;
-	} else if (!leftBlink && rightBlink){
-		return 1;
-	} else return 0;
+		return 0; //For now, both blink are too bad
+	} else if (leftBlink ){// && !rightBlink){
+		leftJustBlink --;
+		leftCount++;
+		if(leftCount >= blinkThresh && leftJustBlink <= 0){
+			leftCount = 0;
+			leftJustBlink = blinkThresh;
+			return 2;
+		}
+	} else if (rightBlink ){// && rightBlink){
+		rightJustBlink --;
+		rightCount++;
+		if(rightCount >= blinkThresh && rightJustBlink <= 0){
+			rightCount = 0;
+			rightJustBlink = blinkThresh;
+			return 1;
+		}
+	} else {
+		leftCount = 0;
+		rightCount = 0;
+		return 0;
+	}
 
 }
 
