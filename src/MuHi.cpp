@@ -118,8 +118,8 @@ int main( int argc, char** argv ){
 		if( (char)c == 27 ) { fin = true; }
 		//if( (char)c == 'a' ) { stepWriter(void); }
 		if( (char)c == 'b' ) { click(); step = 0;}
-		if( (char)c == '+' ) { STEP_WAIT = STEP_WAIT + 10; }
-		if( (char)c == '-' ) { STEP_WAIT = STEP_WAIT - 10; }
+		if( (char)c == '+' ) { STEP_WAIT = STEP_WAIT + 5; }
+		if( (char)c == '-' ) { STEP_WAIT = STEP_WAIT - 5; }
 		if( (char)c == 'd' ) { debug = !debug; }
 
 

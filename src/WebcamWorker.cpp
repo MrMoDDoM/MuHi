@@ -33,6 +33,9 @@ int leftCount = 0, rightCount = 0, leftJustBlink = 0, rightJustBlink = 0;
 
 bool leftIsClosed, rightIsClosed;
 
+const int eyeArrayDim = 5;
+int leftArray[eyeArrayDim], rightArray[eyeArrayDim];
+
 int initCamWorker() {
 
 	//Qui dovrò preoccuparmi di gestire le webcam...
@@ -41,6 +44,11 @@ int initCamWorker() {
 	if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
 	if( !eyes_cascade_left.load( eyes_left_cascade_name ) ){ printf("--(!)Error loading LEFT EYE\n"); return -1; };
 	if( !eyes_cascade_right.load( eyes_right_cascade_name ) ){ printf("--(!)Error loading RIGHT EYE\n"); return -1; };
+
+	for(int i = 0; i < eyeArrayDim; i++){
+		leftArray[i] = 0;
+		rightArray[i] = 0;
+	}
 
 	return 0;
 }
@@ -184,8 +192,7 @@ Rect detectEye(Mat *in, CascadeClassifier *cc){
 
 }
 //Return true when the eye is closed
-bool searchHis(Mat *in){
-
+bool searchHis(Mat *in, int *arr){
 	//Mat his = Mat::zeros(in->rows, in->cols, CV_8UC1);
 
 	int index_left = -1, index_right = -1, q;
@@ -210,7 +217,7 @@ bool searchHis(Mat *in){
 
 		media += accumulator;
 
-		if( accumulator <= max)
+		if( accumulator >= max)
 			max = accumulator;
 	}
 
@@ -246,7 +253,17 @@ bool searchHis(Mat *in){
 
 	varianza = varianza / i;
 
-	//std::cout<<"Media: "<< media << " -Varianza: "<< varianza << std::endl;
+	//Push bach varianza value in the array
+	for(q = 0; q < eyeArrayDim - 1; q++){
+		arr[q] = arr[q+1];
+	}
+
+	arr[eyeArrayDim - 1] = varianza;
+
+	//Calc the delta shifting
+	float shift = (arr[eyeArrayDim - 1] - arr[0] ) / eyeArrayDim;
+
+	std::cout << std::fixed << std::setprecision(3) <<"SHIFT: "<< shift <<" -Media: "<< media << " -Varianza: "<< varianza << " -Max: "<< max <<std::endl;
 
 	//From now on, we have the vector 'array' that contains the data info about the 'histogram'
 //	index_left = in->cols/3;
@@ -276,11 +293,18 @@ bool searchHis(Mat *in){
 //	} else return true;
 
 
-	if(varianza >= 15){
-		return false;
-	} else return true;
+
+//	if(varianza >= max){
+//		return false;
+//	} else return true;
+
+
+	if(shift < (-2) ){
+		return true;
+	} else return false;
 
 }
+
 
 int detectBlink(Mat *in){
 
@@ -334,14 +358,18 @@ int detectBlink(Mat *in){
 	Rect temp = detectEye(&tempROI, &eyes_cascade_left);
 	if(temp.area() != 0 ){
 
+		//Translate to the right coordinates
 		temp.x += leftEyeRegion.x;
 		temp.y += leftEyeRegion.y;
 
-//		temp.width -= temp.width/5;
-//		temp.height -= temp.height/5;
+		//Crop for 1/5
+		temp.x += temp.width/5;
+		temp.y += temp.width/5;
+		temp.width -= temp.width/5;
+		temp.height -= temp.height/5;
 
 		leftEyeROI = frame_gray(temp);
-		imshow("Prova sinistra", leftEyeROI);
+		//imshow("Prova sinistra", leftEyeROI);
 
 		rectangle(*in,
 				Point(temp.x, temp.y),
@@ -354,8 +382,15 @@ int detectBlink(Mat *in){
 	if(temp.area() != 0 ){
 		temp.x += rightEyeRegion.x;
 		temp.y += rightEyeRegion.y;
+
+
+		temp.x += temp.width/5;
+		temp.y += temp.width/5;
+		temp.width -= temp.width/5;
+		temp.height -= temp.height/5;
+
 		rightEyeROI = frame_gray(temp);
-		imshow("Prova destra", rightEyeROI);
+		//imshow("Prova destra", rightEyeROI);
 
 		rectangle(*in,
 				Point(temp.x, temp.y),
@@ -387,7 +422,7 @@ int detectBlink(Mat *in){
 		resize(leftEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
 		threshold( temp, temp, 70, 255, 0 );
-		leftBlink = searchHis(&temp);
+		leftBlink = searchHis(&temp, leftArray);
 		imshow("Threshold L", temp);
 	}
 
@@ -397,7 +432,7 @@ int detectBlink(Mat *in){
 		resize(rightEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
 		threshold( temp, temp, 70, 255, 0 );
-		rightBlink = searchHis(&temp);
+		//rightBlink = searchHis(&temp, rightArray);
 		imshow("Threshold R", temp);
 	}
 
@@ -405,20 +440,20 @@ int detectBlink(Mat *in){
 
 	if(leftBlink && rightBlink){
 		return 0; //For now, both blink are too bad
-	} else if (leftBlink ){// && !rightBlink){
+	} else if (leftBlink && !rightBlink){
 		leftJustBlink --;
 		leftCount++;
 		if(leftCount >= blinkThresh && leftJustBlink <= 0){
 			leftCount = 0;
-			leftJustBlink = blinkThresh;
+			leftJustBlink = blinkThresh*2;
 			return 2;
 		}
-	} else if (rightBlink ){// && rightBlink){
+	} else if (rightBlink && !leftBlink){
 		rightJustBlink --;
 		rightCount++;
 		if(rightCount >= blinkThresh && rightJustBlink <= 0){
 			rightCount = 0;
-			rightJustBlink = blinkThresh;
+			rightJustBlink = blinkThresh *2 ;
 			return 1;
 		}
 	} else {

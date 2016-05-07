@@ -21,7 +21,7 @@ Rect detectFace(Mat *in);
 int detectBlink(Mat *in);
 void checkStability(Rect *newer, Rect *old);
 int movedDiff(Mat *backgroundImage, Mat *currentImage);
-
+bool searchHis(Mat *in, int *arr);
 
 //Prove
 void calcHi(Mat *in);

@@ -24,6 +24,8 @@ Action *nowSelected;
 
 std::stringstream phrase;
 
+bool forward = true;
+
 void resetSelect(){
 	//We start from the first
 	nowSelected->selected = false;
@@ -37,16 +39,21 @@ void checkBlink(int blinkStatus){
 		click();
 
 	if(blinkStatus == 2){ //Left blink
-		resetSelect();
-		phrase.str("");
+		forward = !forward;
 	}
 }
 
 void stepWriter(){
-
 	nowSelected->selected = false;
+	Action *temp;
 
-	Action *temp = nowSelected->getNext();
+	if(forward){
+
+		temp = nowSelected->getNext();
+
+	} else {
+		temp = nowSelected->getBefore();
+	}
 
 	temp-> selected = true;
 
@@ -55,10 +62,15 @@ void stepWriter(){
 
 void click(){
 
+	//std::stringstream o;
 	switch (nowSelected->type){
 	case 0: //The enter command
 		std::cout << "NOT IMPEMENTED" << std::endl;
-		//system("espeak " + phrase.str());
+
+
+		//o << "espeak -v italian -s 290 " <<phrase.str();
+
+		//system(o.str());
 		break;
 
 	case 1: //Delete all
@@ -129,6 +141,15 @@ void initWriter(){
 	actions[1].next = &alphabet[0];
 	//actions[7].next = &alphabet[0];
 
+	//AAAAAND BACKWARD! :D
+	for(int i = 29; i > 0; i--){
+		alphabet[i].before = &alphabet[i - 1];
+	}
+
+	alphabet[0].before = &actions[1];
+	actions[1].before = &actions[0];
+	actions[0].before = &alphabet[29];
+
 	//Start from the "A"
 	nowSelected = &alphabet[0];
 	resetSelect();
@@ -175,6 +196,10 @@ void Action::draw(Mat *in){
 
 Action* Action::getNext(){
 		return next;
+}
+
+Action* Action::getBefore(){
+		return before;
 }
 
 void Letter::draw(Mat *in){

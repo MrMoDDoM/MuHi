@@ -36,11 +36,13 @@ private:
 
 public:
 	Action *getNext();
+	Action *getBefore();
 	void draw(Mat *in);
 	bool selected;
 	float x,y,h,w;
 	char text[100];
 	Action *next;
+	Action *before;
 
 	enum Types {ACTION, LETTER, SPACER};
 	int type;
