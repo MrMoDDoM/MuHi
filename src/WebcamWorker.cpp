@@ -31,9 +31,9 @@ bool faceMoved = true;
 
 bool leftIsClosed, rightIsClosed;
 
-int blinkThresh = 10;
+int blinkThresh = 7;
 
-const int eyeArrayDim = 10;
+const int eyeArrayDim = 6;
 int leftVarianzaArray[eyeArrayDim], rightVarianzaArray[eyeArrayDim];
 int leftShiftArray[eyeArrayDim], rightShiftArray[eyeArrayDim];
 
@@ -179,7 +179,7 @@ Rect detectEye(Mat *in, CascadeClassifier *cc){
 
 	//eyes_cascade_right.detectMultiScale( faceROI(leftEyeRegion), eyes, 1.1, 2, 0 , Size(20, 20), Size(50,50) );
 
-	cc->detectMultiScale(*in,results,1.1,2,0,Size(20,20), Size(50,50));
+	cc->detectMultiScale(*in, results, 1.1, 2, 0, Size(20,20));
 
 	//We consider only ONE face, the biggest one...
 	if(results.size() != 0){
@@ -305,78 +305,79 @@ int findTheStatus(){
 
 	bool leftIsClosing = false, leftIsOpening = false, rightIsClosing = false, rightIsOpening = false;
 
-//	for(int i = 0; i < eyeArrayDim; i++){
-//		std::cout<<std::setw(3)<<leftShiftArray[i]<<"/";
-//	}
-//
-//	std::cout<<std::endl<<"Right: ";
-//
-//	for(int i = 0; i < eyeArrayDim; i++){
-//		std::cout<<std::setw(3)<<rightShiftArray[i]<<"/";
-//	}
-
 	int leftCountClosing = 0, rightCountClosing = 0, leftCountOpening = 0, rightCountOpening = 0;
 
 	for(int i = 0; i < eyeArrayDim; i++){
 
 		//Couting left
 		if(leftShiftArray[i] < -1)
-			leftCountClosing ++;//= leftShiftArray[i];
+			leftCountClosing += abs(leftShiftArray[i]);
 		if(leftShiftArray[i] > 1)
-			leftCountOpening ++;//= rightShiftArray[i];
+			leftCountOpening += abs(rightShiftArray[i]);
 
 		//Countig right
 		if(rightShiftArray[i] < -1)
-			rightCountClosing ++;
+			rightCountClosing += abs(rightShiftArray[i]);
 		if(rightShiftArray[i] > 1)
-			rightCountOpening ++;
+			rightCountOpening += abs(rightShiftArray[i]);
 	}
 
-	if(leftCountClosing > blinkThresh)
-		leftIsClosing = true;
+//	std::cout<< std::fixed << std::setprecision(5)<<"LCC: "<<leftCountClosing;
+//	std::cout<< std::fixed << std::setprecision(5)<<" -LCO: "<<leftCountOpening<<std::endl;
+//
+//	std::cout<< std::fixed << std::setprecision(5)<<"RCC: "<<rightCountClosing;
+//	std::cout<< std::fixed << std::setprecision(5)<<" -RCO: "<<rightCountOpening<<std::endl;
 
-	if(leftCountOpening > blinkThresh)
+//	if( (leftCountClosing > leftCountOpening + blinkThresh) && !leftIsClosed)
+//		leftIsClosed = true;
+//
+//	if( (leftCountOpening > leftCountClosing + blinkThresh) && leftIsClosed)
+//		leftIsClosed = false;
+//
+//	if( (rightCountClosing > leftCountOpening + blinkThresh) && !rightIsClosed)
+//		rightIsClosed = true;
+//
+//	if( (rightCountOpening > leftCountClosing + blinkThresh) && rightIsClosed)
+//		rightIsClosed = false;
+//
+
+	if(leftCountClosing > leftCountOpening + blinkThresh)
+		leftIsClosing = true;
+	else if (leftCountOpening < leftCountClosing + blinkThresh)
 		leftIsOpening = true;
 
-	if(rightCountClosing > blinkThresh)
-		rightIsClosing = true;
 
-	if(rightCountOpening > blinkThresh)
+//	if(leftCountOpening > blinkThresh)
+//		leftIsOpening = true;
+
+	if(rightCountClosing > rightCountOpening + blinkThresh )
+		rightIsClosing = true;
+	else if (rightCountOpening < rightCountClosing + blinkThresh )
 		rightIsOpening = true;
 
+//	if(rightCountOpening > blinkThresh)
+//		rightIsOpening = true;
 
 	if(rightIsClosing && !rightIsClosed && !rightIsOpening)
 		rightIsClosed = true;
 
-	if(!rightIsClosing && rightIsClosed && rightIsOpening)
+	if(rightIsOpening && rightIsClosed && !rightIsClosing)
 		rightIsClosed = false;
 
 	if(leftIsClosing && !leftIsClosed && !leftIsOpening)
 		leftIsClosed = true;
 
-	if(!leftIsClosing && leftIsClosed && leftIsOpening)
+	if(leftIsOpening && leftIsClosed && !leftIsClosing)
 		leftIsClosed = false;
 
 
-	if(rightIsClosed && leftIsClosed)
+	if((rightIsClosed && leftIsClosed) || (leftIsClosing && rightIsClosing))
 		return 3;
 	else if (!rightIsClosed && leftIsClosed)
 		return 2;
 	else if (rightIsClosed && !leftIsClosed)
 		return 1;
 	else return 0;
-
-//	if( shifLeft < -1 && !leftIsClosed){ //Descending front and the left eye is NOT closed
-//		leftCount += shifLeft; //Increasing the probability that eye left eye is closing!
-//
-//		if( leftCount > blinkThresh){ //If the probability is higher that the threshold
-//			leftIsClosed = true;
-//
-//		}
-//	}
-
-
-
 
 //	if (shifLeft && !rightShift){
 //		leftJustBlink --;
@@ -528,22 +529,22 @@ int detectBlink(Mat *in, int _blinkThresh){
 
 	if(!leftEyeROI.empty()){
 		Mat temp;
-		threshold( leftEyeROI, leftEyeROI, 40, 255, 0 );
+		threshold( leftEyeROI, leftEyeROI, 50, 255, 0 );
 		resize(leftEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
-		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
-		threshold( temp, temp, 80, 255, 0 );
+		GaussianBlur( temp, temp, Size(3, 3), 1, 1);
+		threshold( temp, temp, 70, 255, 0 );
 		leftShift = searchFront(&temp, leftVarianzaArray, leftShiftArray);
-		imshow("Threshold L", temp);
+		//imshow("Threshold L", temp);
 	}
 
 	if(!rightEyeROI.empty()){
 		Mat temp;
-		threshold( rightEyeROI, rightEyeROI, 40, 255, 0 );
+		threshold( rightEyeROI, rightEyeROI, 50, 255, 0 );
 		resize(rightEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
-		threshold( temp, temp, 80, 255, 0 );
+		threshold( temp, temp, 70, 255, 0 );
 		rightShift = searchFront(&temp, rightVarianzaArray, rightShiftArray);
-		imshow("Threshold R", temp);
+		//imshow("Threshold R", temp);
 	}
 
 	//std::cout<<"Sinistro: "<<leftBlink<<" -Destro: "<<rightBlink<<std::endl;

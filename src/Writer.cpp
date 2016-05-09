@@ -41,6 +41,8 @@ void checkBlink(int blinkStatus){
 	//Update the writer's eyes status
 	switch (blinkStatus){
 	case 0: //Both open
+		leftClose = false;
+		rightClose = false;
 		break;
 	case 1: //Right close - left open
 		if(leftClose)
@@ -58,15 +60,15 @@ void checkBlink(int blinkStatus){
 			forward = !forward;
 		}
 
-
 		if(rightClose){
 			rightClose = false;
 		}
 		break;
 
 	case 3: //Both close
+		leftClose = true;
+		rightClose = true;
 		break;
-
 	}
 }
 
@@ -92,16 +94,14 @@ void click(){
 	//std::stringstream o;
 	switch (nowSelected->type){
 	case 0: //The enter command
-		std::cout << "NOT IMPEMENTED" << std::endl;
-
-
+		std::cout<<"NOT IMPLEMENTED"<<std::endl;
 		//o << "espeak -v italian -s 290 " <<phrase.str();
 
 		//system(o.str());
 		break;
 
-	case 1: //Delete all
-		phrase.str("");
+	case 1: //Delete last char
+		phrase.str(""); //Delete all
 		break;
 
 	case 2: //A normal char
@@ -114,7 +114,9 @@ void click(){
 
 void initWriter(){
 
-	//phrase << "Frase di prova";
+	leftClose = false;
+	rightClose = false;
+
 
 	int step = 0;
 
@@ -204,6 +206,9 @@ void drawHUD(Mat *in){
 
 	std::stringstream status;
 
+
+	status.str("");
+
 	if(leftClose)
 		status<<"Left Closed";
 	else
@@ -220,7 +225,7 @@ void drawHUD(Mat *in){
 
 	putText(*in, status.str(), Point(640 - 200, 480 - 150), fontFace, 1, Scalar::all(0), 1, 1, false);
 
-
+	//std::cout<<"Stauts from Writer: "<<leftClose << " - "<<rightClose<<std::endl;
 }
 
 void Action::draw(Mat *in){

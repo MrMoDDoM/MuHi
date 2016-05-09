@@ -75,6 +75,8 @@ int main( int argc, char** argv ){
 	noError = true;
 	fin = false;
 
+	int old_status = 0, countingSameStatus = 0;
+
 	int blinkTresh = 10;
 
 
@@ -90,7 +92,23 @@ int main( int argc, char** argv ){
 		getFrame(&frame);
 		blinkStatus = detectBlink(&frame, blinkTresh);
 
-		cout<<"Actual state: "<< blinkStatus<<endl;
+		if(blinkStatus == old_status){
+			countingSameStatus++;
+		} else {
+			old_status = blinkStatus;
+			countingSameStatus = 0;
+		}
+
+		//Passare al Writer lo stato del blinink (blinkRigth, blinkLeft) e farlo agire di conseguenza
+		//if(blinkStatus)
+		if(countingSameStatus >= 3){
+			countingSameStatus = 0;
+			checkBlink(blinkStatus);
+			cout<<"Status: "<<blinkStatus<<endl;
+		}
+
+
+		//cout<<"Actual state: "<< blinkStatus<<endl;
 
 //		switch (blinkStatus){
 //		case 0:
@@ -113,10 +131,6 @@ int main( int argc, char** argv ){
 
 		//Refersh HUD from Writer
 		drawHUD(&HUD);
-
-		//Passare al Writer lo stato del blinink (blinkRigth, blinkLeft) e farlo agire di conseguenza
-		if(blinkStatus)
-			checkBlink(blinkStatus);
 
 		//Controllo tastiera
 		int c = waitKey(10);

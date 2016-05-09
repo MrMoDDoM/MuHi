@@ -29,7 +29,7 @@ int Y_RESOLUTION = 480;
 Mat frame, HUD;
 bool blinkRigth, blinkLeft, noError, fin;
 char key;
-int STEP_WAIT = 100;
+int STEP_WAIT = 50;
 bool debug = false;
 ////////////////////////////////////
 ////////////////////////////////////
