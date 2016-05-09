@@ -26,6 +26,8 @@ std::stringstream phrase;
 
 bool forward = true;
 
+bool leftClose, rightClose;
+
 void resetSelect(){
 	//We start from the first
 	nowSelected->selected = false;
@@ -35,11 +37,36 @@ void resetSelect(){
 }
 
 void checkBlink(int blinkStatus){
-	if(blinkStatus == 1) //Right blink
-		click();
 
-	if(blinkStatus == 2){ //Left blink
-		forward = !forward;
+	//Update the writer's eyes status
+	switch (blinkStatus){
+	case 0: //Both open
+		break;
+	case 1: //Right close - left open
+		if(leftClose)
+			leftClose = false;
+
+		if(!rightClose){
+			rightClose = true;
+			click();
+		}
+		break;
+
+	case 2: //Right open - left close
+		if(!leftClose){
+			leftClose = true;
+			forward = !forward;
+		}
+
+
+		if(rightClose){
+			rightClose = false;
+		}
+		break;
+
+	case 3: //Both close
+		break;
+
 	}
 }
 
@@ -172,6 +199,27 @@ void drawHUD(Mat *in){
 
 	//Draw the phrase
 	putText(*in, phrase.str(), Point(40, 70), fontFace, 1, Scalar::all(0), 3, 1, false);
+
+	//Draw eye status
+
+	std::stringstream status;
+
+	if(leftClose)
+		status<<"Left Closed";
+	else
+		status<<"Left Open";
+
+	putText(*in, status.str(), Point(640 - 200, 480 - 100), fontFace, 1, Scalar::all(0), 1, 1, false);
+
+	status.str("");
+
+	if(rightClose)
+		status<<"Right Closed";
+	else
+		status<<"Right Open";
+
+	putText(*in, status.str(), Point(640 - 200, 480 - 150), fontFace, 1, Scalar::all(0), 1, 1, false);
+
 
 }
 

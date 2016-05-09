@@ -29,12 +29,13 @@ const float STABILITY_THRESHOLD = 5.0;
 
 bool faceMoved = true;
 
-int leftCount = 0, rightCount = 0, leftJustBlink = 0, rightJustBlink = 0;
-
 bool leftIsClosed, rightIsClosed;
 
-const int eyeArrayDim = 5;
-int leftArray[eyeArrayDim], rightArray[eyeArrayDim];
+int blinkThresh = 10;
+
+const int eyeArrayDim = 10;
+int leftVarianzaArray[eyeArrayDim], rightVarianzaArray[eyeArrayDim];
+int leftShiftArray[eyeArrayDim], rightShiftArray[eyeArrayDim];
 
 int initCamWorker() {
 
@@ -46,8 +47,10 @@ int initCamWorker() {
 	if( !eyes_cascade_right.load( eyes_right_cascade_name ) ){ printf("--(!)Error loading RIGHT EYE\n"); return -1; };
 
 	for(int i = 0; i < eyeArrayDim; i++){
-		leftArray[i] = 0;
-		rightArray[i] = 0;
+		leftVarianzaArray[i] = 0;
+		rightVarianzaArray[i] = 0;
+		leftShiftArray[i] = 0;
+		rightShiftArray[i] = 0;
 	}
 
 	return 0;
@@ -192,7 +195,7 @@ Rect detectEye(Mat *in, CascadeClassifier *cc){
 
 }
 //Return true when the eye is closed
-bool searchHis(Mat *in, int *arr){
+float searchFront(Mat *in, int *arrVarianza, int *arrShift){
 	//Mat his = Mat::zeros(in->rows, in->cols, CV_8UC1);
 
 	int index_left = -1, index_right = -1, q;
@@ -255,15 +258,20 @@ bool searchHis(Mat *in, int *arr){
 
 	//Push bach varianza value in the array
 	for(q = 0; q < eyeArrayDim - 1; q++){
-		arr[q] = arr[q+1];
+		arrVarianza[q] = arrVarianza[q+1];
+		arrShift[q] = arrShift[q+1];
 	}
 
-	arr[eyeArrayDim - 1] = varianza;
+	arrVarianza[eyeArrayDim - 1] = varianza;
 
 	//Calc the delta shifting
-	float shift = (arr[eyeArrayDim - 1] - arr[0] ) / eyeArrayDim;
+	float shift = (arrVarianza[eyeArrayDim - 1] - arrVarianza[0] ) / eyeArrayDim;
 
-	std::cout << std::fixed << std::setprecision(3) <<"SHIFT: "<< shift <<" -Media: "<< media << " -Varianza: "<< varianza << " -Max: "<< max <<std::endl;
+	//std::cout << std::fixed << std::setprecision(3) <<"SHIFT: "<< shift <<" -Media: "<< media << " -Varianza: "<< varianza << " -Max: "<< max <<std::endl;
+
+	arrShift[eyeArrayDim - 1] = shift;
+
+	return shift;
 
 	//From now on, we have the vector 'array' that contains the data info about the 'histogram'
 //	index_left = in->cols/3;
@@ -291,32 +299,134 @@ bool searchHis(Mat *in, int *arr){
 //	if(sum_int > sum_ext){
 //		return false;
 //	} else return true;
+}
+
+int findTheStatus(){
+
+	bool leftIsClosing = false, leftIsOpening = false, rightIsClosing = false, rightIsOpening = false;
+
+//	for(int i = 0; i < eyeArrayDim; i++){
+//		std::cout<<std::setw(3)<<leftShiftArray[i]<<"/";
+//	}
+//
+//	std::cout<<std::endl<<"Right: ";
+//
+//	for(int i = 0; i < eyeArrayDim; i++){
+//		std::cout<<std::setw(3)<<rightShiftArray[i]<<"/";
+//	}
+
+	int leftCountClosing = 0, rightCountClosing = 0, leftCountOpening = 0, rightCountOpening = 0;
+
+	for(int i = 0; i < eyeArrayDim; i++){
+
+		//Couting left
+		if(leftShiftArray[i] < -1)
+			leftCountClosing ++;//= leftShiftArray[i];
+		if(leftShiftArray[i] > 1)
+			leftCountOpening ++;//= rightShiftArray[i];
+
+		//Countig right
+		if(rightShiftArray[i] < -1)
+			rightCountClosing ++;
+		if(rightShiftArray[i] > 1)
+			rightCountOpening ++;
+	}
+
+	if(leftCountClosing > blinkThresh)
+		leftIsClosing = true;
+
+	if(leftCountOpening > blinkThresh)
+		leftIsOpening = true;
+
+	if(rightCountClosing > blinkThresh)
+		rightIsClosing = true;
+
+	if(rightCountOpening > blinkThresh)
+		rightIsOpening = true;
+
+
+	if(rightIsClosing && !rightIsClosed && !rightIsOpening)
+		rightIsClosed = true;
+
+	if(!rightIsClosing && rightIsClosed && rightIsOpening)
+		rightIsClosed = false;
+
+	if(leftIsClosing && !leftIsClosed && !leftIsOpening)
+		leftIsClosed = true;
+
+	if(!leftIsClosing && leftIsClosed && leftIsOpening)
+		leftIsClosed = false;
+
+
+	if(rightIsClosed && leftIsClosed)
+		return 3;
+	else if (!rightIsClosed && leftIsClosed)
+		return 2;
+	else if (rightIsClosed && !leftIsClosed)
+		return 1;
+	else return 0;
+
+//	if( shifLeft < -1 && !leftIsClosed){ //Descending front and the left eye is NOT closed
+//		leftCount += shifLeft; //Increasing the probability that eye left eye is closing!
+//
+//		if( leftCount > blinkThresh){ //If the probability is higher that the threshold
+//			leftIsClosed = true;
+//
+//		}
+//	}
 
 
 
-//	if(varianza >= max){
-//		return false;
-//	} else return true;
 
-
-	if(shift < (-2) ){
-		return true;
-	} else return false;
+//	if (shifLeft && !rightShift){
+//		leftJustBlink --;
+//		leftCount++;
+//		if(leftCount >= blinkThresh && leftJustBlink <= 0){
+//			leftCount = 0;
+//			leftJustBlink = blinkThresh*2;
+//			return 2;
+//		}
+//	} else if (shiftRight && !leftShift){
+//		rightJustBlink --;
+//		rightCount++;
+//		if(rightCount >= blinkThresh && rightJustBlink <= 0){
+//			rightCount = 0;
+//			rightJustBlink = blinkThresh *2 ;
+//			return 1;
+//		}
+//	} else if (shiftRight && shiftRight){
+//		leftJustBlink --;
+//		leftCount++;
+//		rightJustBlink --;
+//		rightCount++;
+//		if((leftCount >= blinkThresh && leftJustBlink <= 0) && (rightCount >= blinkThresh && rightJustBlink <= 0)){
+//			leftCount = 0;
+//			leftJustBlink = blinkThresh*2;
+//			rightCount = 0;
+//			rightJustBlink = blinkThresh *2;
+//			return 0;
+//		}
+//	} else {
+//		leftCount = 0;
+//		rightCount = 0;
+//		return 0;
+//	}
 
 }
 
 
-int detectBlink(Mat *in){
+int detectBlink(Mat *in, int _blinkThresh){
 
 	//calcHi(in);
+
+	blinkThresh = _blinkThresh;
 
 	Mat frame_gray;
 	Mat faceROI;
 	Mat leftEyeROI;
 	Mat rightEyeROI;
 
-	bool rightBlink = false;
-	bool leftBlink = false;
+	float rightShift = 0.0, leftShift = 0.0;
 
 	cvtColor( *in, frame_gray, CV_BGR2GRAY );
 	GaussianBlur( *in, *in, Size(3, 3), 1, 1 );
@@ -418,50 +528,27 @@ int detectBlink(Mat *in){
 
 	if(!leftEyeROI.empty()){
 		Mat temp;
-		threshold( leftEyeROI, leftEyeROI, 50, 255, 0 );
+		threshold( leftEyeROI, leftEyeROI, 40, 255, 0 );
 		resize(leftEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
-		threshold( temp, temp, 70, 255, 0 );
-		leftBlink = searchHis(&temp, leftArray);
+		threshold( temp, temp, 80, 255, 0 );
+		leftShift = searchFront(&temp, leftVarianzaArray, leftShiftArray);
 		imshow("Threshold L", temp);
 	}
 
 	if(!rightEyeROI.empty()){
 		Mat temp;
-		threshold( rightEyeROI, rightEyeROI, 50, 255, 0 );
+		threshold( rightEyeROI, rightEyeROI, 40, 255, 0 );
 		resize(rightEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
-		threshold( temp, temp, 70, 255, 0 );
-		//rightBlink = searchHis(&temp, rightArray);
+		threshold( temp, temp, 80, 255, 0 );
+		rightShift = searchFront(&temp, rightVarianzaArray, rightShiftArray);
 		imshow("Threshold R", temp);
 	}
 
-	int blinkThresh = 5;
+	//std::cout<<"Sinistro: "<<leftBlink<<" -Destro: "<<rightBlink<<std::endl;
 
-	if(leftBlink && rightBlink){
-		return 0; //For now, both blink are too bad
-	} else if (leftBlink && !rightBlink){
-		leftJustBlink --;
-		leftCount++;
-		if(leftCount >= blinkThresh && leftJustBlink <= 0){
-			leftCount = 0;
-			leftJustBlink = blinkThresh*2;
-			return 2;
-		}
-	} else if (rightBlink && !leftBlink){
-		rightJustBlink --;
-		rightCount++;
-		if(rightCount >= blinkThresh && rightJustBlink <= 0){
-			rightCount = 0;
-			rightJustBlink = blinkThresh *2 ;
-			return 1;
-		}
-	} else {
-		leftCount = 0;
-		rightCount = 0;
-		return 0;
-	}
-
+	return findTheStatus();
 }
 
 

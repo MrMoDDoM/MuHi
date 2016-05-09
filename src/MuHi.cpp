@@ -75,6 +75,9 @@ int main( int argc, char** argv ){
 	noError = true;
 	fin = false;
 
+	int blinkTresh = 10;
+
+
 	while(!fin){
 
 		//For this probably is better use an enum...
@@ -85,21 +88,23 @@ int main( int argc, char** argv ){
 		int blinkStatus = 0;
 
 		getFrame(&frame);
-		blinkStatus = detectBlink(&frame);
+		blinkStatus = detectBlink(&frame, blinkTresh);
 
-		switch (blinkStatus){
-		case 0:
-			break;
-		case 1:
-			cout<<"DESTRO"<<endl;
-			break;
-		case 2:
-			cout<<"SINISTRO"<<endl;
-			break;
-		case 3:
-			cout<<"ENTRAMBI"<<endl;
-			break;
-		}
+		cout<<"Actual state: "<< blinkStatus<<endl;
+
+//		switch (blinkStatus){
+//		case 0:
+//			break;
+//		case 1:
+//			cout<<"DESTRO"<<endl;
+//			break;
+//		case 2:
+//			cout<<"SINISTRO"<<endl;
+//			break;
+//		case 3:
+//			cout<<"ENTRAMBI"<<endl;
+//			break;
+//		}
 
 		if(step >= STEP_WAIT){
 			step = 0;
@@ -121,6 +126,8 @@ int main( int argc, char** argv ){
 		if( (char)c == '+' ) { STEP_WAIT = STEP_WAIT + 5; }
 		if( (char)c == '-' ) { STEP_WAIT = STEP_WAIT - 5; }
 		if( (char)c == 'd' ) { debug = !debug; }
+		if( (char)c == 'a' ) { blinkTresh--; }
+		if( (char)c == 's' ) { blinkTresh++; }
 
 
 		//SHOW HUD

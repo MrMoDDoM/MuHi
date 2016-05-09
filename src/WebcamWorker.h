@@ -18,10 +18,11 @@ using namespace cv;
 int initCamWorker();
 void getFrame(Mat *in);
 Rect detectFace(Mat *in);
-int detectBlink(Mat *in);
+int detectBlink(Mat *in, int _blinkThresh);
 void checkStability(Rect *newer, Rect *old);
 int movedDiff(Mat *backgroundImage, Mat *currentImage);
-bool searchHis(Mat *in, int *arr);
+float searchFront(Mat *in, int *arr);
+int findTheStatus(float shifLeft, float shiftRight);
 
 //Prove
 void calcHi(Mat *in);
