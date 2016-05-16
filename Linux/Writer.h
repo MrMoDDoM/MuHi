@@ -17,7 +17,7 @@ using namespace cv;
 
 void resetSelect();
 void checkBlink(int blinkStatus);
-void initWriter();
+int initWriter();
 void drawHUD(Mat *in);
 void stepWriter();
 void click();

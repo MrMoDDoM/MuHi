@@ -18,14 +18,13 @@ using namespace cv;
 int initCamWorker();
 void getFrame(Mat *in);
 Rect detectFace(Mat *in);
-int detectBlink(Mat *in, int _blinkThresh);
+int detectBlink(Mat *in, int _blinkThresh, bool _debug);
 void checkStability(Rect *newer, Rect *old);
-int movedDiff(Mat *backgroundImage, Mat *currentImage);
 float searchFront(Mat *in, int *arr);
 int findTheStatus(float shifLeft, float shiftRight);
+Rect detectCascade(Mat *in, CascadeClassifier *cc, Size _size);
 
-//Prove
-void calcHi(Mat *in);
-Rect detectEye(Mat *in, CascadeClassifier *cc);
+//---------UNUSED FUNCTION BUT MAYBE USEFULL ONE DAY------------
+int movedDiff(Mat *backgroundImage, Mat *currentImage);
 
 #endif /* WEBCAMWORKER_H_ */

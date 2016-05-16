@@ -46,13 +46,15 @@ void *stepCall(void *threadid){
 
 int init(){
 	//webcamWorker
-	initCamWorker();
+	if(initCamWorker())
+		return -1;
 
 	//Istanzia memoria per la matrice dell'HUD
 	HUD = Mat::zeros(Y_RESOLUTION, X_RESOLUTION,  CV_8UC3);
 
 	//Inizializza il Writer(alfabeto e memoria)
-	initWriter();
+	if(initWriter())
+		return -1;
 
 	//All went ok!
 	return 0;
@@ -70,7 +72,7 @@ int exit(){
 
 int main( int argc, char** argv ){
 
-	init();
+
 	int step = 0;
 	noError = true;
 	fin = false;
@@ -79,8 +81,14 @@ int main( int argc, char** argv ){
 
 	int blinkTresh = 10;
 
+	if(init())
+		fin = true;
+
+	time_t te;
 
 	while(!fin){
+
+
 
 		//For this probably is better use an enum...
 		// 0 - both open
@@ -90,7 +98,11 @@ int main( int argc, char** argv ){
 		int blinkStatus = 0;
 
 		getFrame(&frame);
-		blinkStatus = detectBlink(&frame, blinkTresh);
+		te = clock();
+		blinkStatus = detectBlink(&frame, blinkTresh, debug);
+		te = clock() - te;
+
+		//cout<< "[INFO] detectBlink ci ha messo: "<< std::fixed << std::setw( 11 ) << std::setprecision( 6 )<<( te / CLOCKS_PER_SEC ) / 1000<<" millisecondi"<<endl;
 
 		if(blinkStatus == old_status){
 			countingSameStatus++;
@@ -104,25 +116,9 @@ int main( int argc, char** argv ){
 		if(countingSameStatus >= 3){
 			countingSameStatus = 0;
 			checkBlink(blinkStatus);
-			cout<<"Status: "<<blinkStatus<<endl;
 		}
 
-
 		//cout<<"Actual state: "<< blinkStatus<<endl;
-
-//		switch (blinkStatus){
-//		case 0:
-//			break;
-//		case 1:
-//			cout<<"DESTRO"<<endl;
-//			break;
-//		case 2:
-//			cout<<"SINISTRO"<<endl;
-//			break;
-//		case 3:
-//			cout<<"ENTRAMBI"<<endl;
-//			break;
-//		}
 
 		if(step >= STEP_WAIT){
 			step = 0;
@@ -137,17 +133,26 @@ int main( int argc, char** argv ){
 		if( (char)c == 27 ) { fin = true; }
 		//if( (char)c == 'a' ) { stepWriter(void); }
 		if( (char)c == 'b' ) { click(); step = 0;}
-		if( (char)c == '+' ) { STEP_WAIT = STEP_WAIT + 5; }
-		if( (char)c == '-' ) { STEP_WAIT = STEP_WAIT - 5; }
-		if( (char)c == 'd' ) { debug = !debug; }
+		if( (char)c == '+' ) { STEP_WAIT = STEP_WAIT + 2; }
+		if( (char)c == '-' ) { STEP_WAIT = STEP_WAIT - 2; }
 		if( (char)c == 'a' ) { blinkTresh--; }
 		if( (char)c == 's' ) { blinkTresh++; }
+		if( (char)c == 'd' ) {
+			if(debug){
+				debug = false;
+				destroyWindow("Webcam");
+			} else debug = true;
 
+		}
 
 		//SHOW HUD
 		imshow(MAIN_WIN_TITLE, HUD);
 
 		if(debug){
+			stringstream out;
+			out<<"Status: "<<blinkStatus<<" - Velocity: "<<STEP_WAIT<<" - Sensibility: "<<blinkTresh;
+			cout<<out.str()<<endl;
+			putText(frame, out.str(), Point(10,15), FONT_HERSHEY_TRIPLEX, 0.5, Scalar::all(255), 1, 1, false);
 			imshow("WebCam", frame);
 		}
 

@@ -18,15 +18,19 @@ int fontFace = FONT_HERSHEY_TRIPLEX;
 //Letter alphabet[26];
 
 Action alphabet[30]; //Plust dot, question mark, space and comma
-Action actions[2];
+Action actions[4];
 
 Action *nowSelected;
 
-std::stringstream phrase;
+//std::stringstream phrase;
+
+string phrase;
 
 bool forward = true;
 
 bool leftClose, rightClose;
+
+char *email = "danielebarattieri@gmail.com";
 
 void resetSelect(){
 	//We start from the first
@@ -94,25 +98,27 @@ void click(){
 	//std::stringstream o;
 	switch (nowSelected->type){
 	case 0: //The enter command
-		std::cout<<"NOT IMPLEMENTED"<<std::endl;
+		if(!strcmp(phrase.data(), "MRMODDOM"))
+			phrase = "Daniele";
+		else phrase = "";
 		//o << "espeak -v italian -s 290 " <<phrase.str();
 
 		//system(o.str());
 		break;
 
 	case 1: //Delete last char
-		phrase.str(""); //Delete all
+		if (phrase.size () > 0) phrase.resize (phrase.size () - 1);
 		break;
 
 	case 2: //A normal char
-		phrase << nowSelected->text;
+		phrase.append(nowSelected->text);
 		break;
 	}
 
 	resetSelect();
 }
 
-void initWriter(){
+int initWriter(){
 
 	leftClose = false;
 	rightClose = false;
@@ -145,7 +151,7 @@ void initWriter(){
 	}
 
 	//Action button
-	for (int i = 0; i < 2; i++){
+	for (int i = 0; i < 4; i++){
 		actions[i].x = 400;
 		actions[i].y = 200 + ( i * LETTER_DIM);
 		actions[i].h = LETTER_DIM;
@@ -157,6 +163,11 @@ void initWriter(){
 	strcpy(actions[1].text, "Canc");
 	actions[1].type = 1;
 
+	strcpy(actions[2].text, "SI ");
+	actions[2].type = 2;
+	strcpy(actions[3].text, "NO ");
+	actions[3].type = 2;
+
 	//Now we need to connect every Action to each next Action
 
 	//FIRST TRY: we connect every letter without the selector
@@ -167,7 +178,9 @@ void initWriter(){
 
 	alphabet[29].next = &actions[0];
 	actions[0].next = &actions[1];
-	actions[1].next = &alphabet[0];
+	actions[1].next = &actions[2];
+	actions[2].next = &actions[3];
+	actions[3].next = &alphabet[0];
 	//actions[7].next = &alphabet[0];
 
 	//AAAAAND BACKWARD! :D
@@ -175,17 +188,23 @@ void initWriter(){
 		alphabet[i].before = &alphabet[i - 1];
 	}
 
-	alphabet[0].before = &actions[1];
+	alphabet[0].before = &actions[3];
+	actions[3].before = &actions[2];
+	actions[2].before = &actions[1];
 	actions[1].before = &actions[0];
 	actions[0].before = &alphabet[29];
 
 	//Start from the "A"
 	nowSelected = &alphabet[0];
 	resetSelect();
+
+	return 0;
 }
 
 void drawHUD(Mat *in){
-	*in = Scalar(59,61,40);
+	//*in = Scalar(59,61,40); //Background color
+
+	*in = Scalar(245,200,64);
 
 	//Phrase background
 	rectangle(*in, Point(0,0), Point(in->cols, 100), Scalar::all(255), CV_FILLED ,1,0 );
@@ -200,12 +219,11 @@ void drawHUD(Mat *in){
 	}
 
 	//Draw the phrase
-	putText(*in, phrase.str(), Point(40, 70), fontFace, 1, Scalar::all(0), 3, 1, false);
+	putText(*in, phrase, Point(40, 70), fontFace, 1, Scalar::all(0), 3, 1, false);
 
 	//Draw eye status
 
 	std::stringstream status;
-
 
 	status.str("");
 
@@ -214,7 +232,7 @@ void drawHUD(Mat *in){
 	else
 		status<<"Left Open";
 
-	putText(*in, status.str(), Point(640 - 200, 480 - 100), fontFace, 1, Scalar::all(0), 1, 1, false);
+	putText(*in, status.str(), Point(640 - 200, 480 - 400), fontFace, 1, Scalar::all(0), 1, 1, false);
 
 	status.str("");
 
@@ -223,9 +241,12 @@ void drawHUD(Mat *in){
 	else
 		status<<"Right Open";
 
-	putText(*in, status.str(), Point(640 - 200, 480 - 150), fontFace, 1, Scalar::all(0), 1, 1, false);
+	putText(*in, status.str(), Point(640 - 200, 480 - 450), fontFace, 1, Scalar::all(0), 1, 1, false);
 
-	//std::cout<<"Stauts from Writer: "<<leftClose << " - "<<rightClose<<std::endl;
+
+	//Write email
+
+	putText(*in, email, Point(640 - 600, 480 - 10), fontFace, 0.5, Scalar::all(0), 1, 1, false);
 }
 
 void Action::draw(Mat *in){
@@ -233,7 +254,7 @@ void Action::draw(Mat *in){
 	Scalar color;
 	if(selected){
 		thickness = 2;
-		color = Scalar(255,0,0);
+		color = Scalar(0,0,255);
 	} else {
 		thickness = 1;
 		color = Scalar(0,0,0);
@@ -264,7 +285,7 @@ void Letter::draw(Mat *in){
 	Scalar color;
 	if(selected){
 		thickness = 2;
-		color = Scalar(255,0,0);
+		color = Scalar(0,0,255);
 	} else {
 		thickness = 1;
 		color = Scalar(0,0,0);
