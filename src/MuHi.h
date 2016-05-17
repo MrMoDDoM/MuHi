@@ -8,13 +8,14 @@
 #ifndef MUHI_H_
 #define MUHI_H_
 
+#include <iostream>
 #include <stdio.h>
-#include <pthread.h>
 #include <iostream>
 #include <exception>
 #include <opencv/cv.h>
-#include <highgui.h>
-
+#include <opencv/highgui.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
 using namespace cv;
 using namespace std;
 

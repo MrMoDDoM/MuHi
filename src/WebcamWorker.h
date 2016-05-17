@@ -8,10 +8,13 @@
 #ifndef WEBCAMWORKER_H_
 #define WEBCAMWORKER_H_
 
+#include <iostream>
 #include <string.h>
 #include <stdio.h>
 #include <opencv/cv.h>
-#include <highgui.h>
+#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
+
 
 using namespace cv;
 

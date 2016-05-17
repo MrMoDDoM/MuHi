@@ -36,14 +36,6 @@
 #include "Writer.h"
 #include "WebcamWorker.h"
 
-void *stepCall(void *threadid){
-	while(!fin){
-		//cout<<system_clock<<endl;
-		//waitKey(1000);
-		stepWriter();
-	}
-}
-
 int init(){
 	//webcamWorker
 	if(initCamWorker())
@@ -67,7 +59,7 @@ int exit(){
 
 	//Waitin for all sub-process to finish
 	//BlinkDetector.join();
-
+	return 0;
 }
 
 int main( int argc, char** argv ){
@@ -98,9 +90,7 @@ int main( int argc, char** argv ){
 		int blinkStatus = 0;
 
 		getFrame(&frame);
-		te = clock();
 		blinkStatus = detectBlink(&frame, blinkTresh, debug);
-		te = clock() - te;
 
 		//cout<< "[INFO] detectBlink ci ha messo: "<< std::fixed << std::setw( 11 ) << std::setprecision( 6 )<<( te / CLOCKS_PER_SEC ) / 1000<<" millisecondi"<<endl;
 

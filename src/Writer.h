@@ -8,11 +8,14 @@
 #ifndef WRITER_H_
 #define WRITER_H_
 
+
+#include <iostream>
 #include <string.h>
 #include <stdio.h>
 #include <opencv/cv.h>
-#include <highgui.h>
-
+#include <opencv/highgui.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
 using namespace cv;
 
 void resetSelect();

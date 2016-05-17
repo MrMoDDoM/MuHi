@@ -24,7 +24,7 @@ Action *nowSelected;
 
 //std::stringstream phrase;
 
-string phrase;
+std::string phrase;
 
 bool forward = true;
 
