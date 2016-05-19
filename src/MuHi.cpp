@@ -68,6 +68,7 @@ int main( int argc, char** argv ){
 	int step = 0;
 	noError = true;
 	fin = false;
+	int thres = 50;
 
 	int old_status = 0, countingSameStatus = 0;
 
@@ -79,9 +80,6 @@ int main( int argc, char** argv ){
 	time_t te;
 
 	while(!fin){
-
-
-
 		//For this probably is better use an enum...
 		// 0 - both open
 		// 1 - right blink
@@ -90,7 +88,7 @@ int main( int argc, char** argv ){
 		int blinkStatus = 0;
 
 		getFrame(&frame);
-		blinkStatus = detectBlink(&frame, blinkTresh, debug);
+		blinkStatus = detectBlink(&frame, blinkTresh, debug, thres);
 
 		//cout<< "[INFO] detectBlink ci ha messo: "<< std::fixed << std::setw( 11 ) << std::setprecision( 6 )<<( te / CLOCKS_PER_SEC ) / 1000<<" millisecondi"<<endl;
 
@@ -121,12 +119,14 @@ int main( int argc, char** argv ){
 		//Controllo tastiera
 		int c = waitKey(10);
 		if( (char)c == 27 ) { fin = true; }
-		//if( (char)c == 'a' ) { stepWriter(void); }
+		if( (char)c == 'u' ) { stepWriter(); }
 		if( (char)c == 'b' ) { click(); step = 0;}
 		if( (char)c == '+' ) { STEP_WAIT = STEP_WAIT + 2; }
 		if( (char)c == '-' ) { STEP_WAIT = STEP_WAIT - 2; }
 		if( (char)c == 'a' ) { blinkTresh--; }
 		if( (char)c == 's' ) { blinkTresh++; }
+		if( (char)c == 'c' ) { thres--; }
+		if( (char)c == 'v' ) { thres++; }
 		if( (char)c == 'd' ) {
 			if(debug){
 				debug = false;
@@ -140,7 +140,7 @@ int main( int argc, char** argv ){
 
 		if(debug){
 			stringstream out;
-			out<<"Status: "<<blinkStatus<<" - Velocity: "<<STEP_WAIT<<" - Sensibility: "<<blinkTresh;
+			out<<"Status: "<<blinkStatus<<" - Velocity: "<<STEP_WAIT<<" - Sensibility: "<<blinkTresh<<" - Soglia occhio: "<<thres;
 			cout<<out.str()<<endl;
 			putText(frame, out.str(), Point(10,15), FONT_HERSHEY_TRIPLEX, 0.5, Scalar::all(255), 1, 1, false);
 			imshow("WebCam", frame);

@@ -21,7 +21,7 @@ using namespace cv;
 int initCamWorker();
 void getFrame(Mat *in);
 Rect detectFace(Mat *in);
-int detectBlink(Mat *in, int _blinkThresh, bool _debug);
+int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh);
 void checkStability(Rect *newer, Rect *old);
 float searchFront(Mat *in, int *arr);
 int findTheStatus(float shifLeft, float shiftRight);

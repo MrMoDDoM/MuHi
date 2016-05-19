@@ -46,6 +46,7 @@ public:
 	char text[100];
 	Action *next;
 	Action *before;
+	int id;
 
 	enum Types {ACTION, LETTER, SPACER};
 	int type;

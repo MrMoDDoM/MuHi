@@ -43,7 +43,7 @@ int leftShiftArray[eyeArrayDim], rightShiftArray[eyeArrayDim];
 int initCamWorker() {
 
 	//Qui dovrò preoccuparmi di gestire le webcam...
-	cam.open(1);
+	cam.open(0);
 
 	if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading FACE CLASSIFIER\n"); return -1; };
 	if( !eyes_cascade_left.load( eyes_left_cascade_name ) ){ printf("--(!)Error loading LEFT EYE CLASSIFIER\n"); return -1; };
@@ -251,7 +251,9 @@ int findTheStatus(){
 
 Mat frame_gray;
 
-int detectBlink(Mat *in, int _blinkThresh, bool _debug){
+Rect left_cand(0,0,0,0), right_cand(0,0,0,0);
+
+int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 
 	//calcHi(in);
 
@@ -314,36 +316,58 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug){
 		temp.width -= temp.width/5;
 		temp.height -= temp.height/5;
 
+		if(left_cand.area() == 0) //We found the eye but we don't have a candidate?
+				left_cand = temp;
+
+			checkStability(&temp, &left_cand);
+
 		leftEyeROI = frame_gray(temp);
 		//imshow("Prova sinistra", leftEyeROI);
 
 		if(_debug)
 			rectangle(*in,
-					Point(temp.x, temp.y),
-					Point(temp.x + temp.width, temp.y + temp.height),
+					Point(left_cand.x, left_cand.y),
+					Point(left_cand.x + left_cand.width, left_cand.y + left_cand.height),
 					Scalar::all(255), 2, 1, 0);
+
+//			rectangle(*in,
+//					Point(temp.x, temp.y),
+//					Point(temp.x + temp.width, temp.y + temp.height),
+//					Scalar::all(255), 2, 1, 0);
+	} else {
+		if(left_cand.area() != 0)
+			leftEyeROI = frame_gray(left_cand);
 	}
 
 	tempROI = frame_gray(rightEyeRegion);
 	temp = detectCascade(&tempROI, &eyes_cascade_right, Size(20,20));
 	if(temp.area() != 0 ){
+
 		temp.x += rightEyeRegion.x;
 		temp.y += rightEyeRegion.y;
-
 
 		temp.x += temp.width/5;
 		temp.y += temp.width/5;
 		temp.width -= temp.width/5;
 		temp.height -= temp.height/5;
 
+		if(right_cand.area() == 0) //We found the eye but we don't have a candidate?
+			right_cand = temp;
+
+		checkStability(&temp, &right_cand);
+
+
 		rightEyeROI = frame_gray(temp);
 		//imshow("Prova destra", rightEyeROI);
 
 		if(_debug)
 			rectangle(*in,
-					Point(temp.x, temp.y),
-					Point(temp.x + temp.width, temp.y + temp.height),
+					Point(right_cand.x, right_cand.y),
+					Point(right_cand.x + right_cand.width, right_cand.y + right_cand.height),
 					Scalar::all(255), 2, 1, 0);
+	} else {
+		if(right_cand.area() != 0)
+			rightEyeROI = frame_gray(right_cand);
 	}
 
 	if(_debug){
@@ -367,23 +391,23 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug){
 
 	if(!leftEyeROI.empty()){
 		Mat temp;
-		threshold( leftEyeROI, leftEyeROI, 50, 255, 0 );
+		threshold( leftEyeROI, leftEyeROI, _thresh, 255, 0 );
 		resize(leftEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1);
 		threshold( temp, temp, 70, 255, 0 );
 		leftShift = searchFront(&temp, leftVarianzaArray, leftShiftArray);
-		//if(_debug)
+		if(_debug)
 			imshow("Threshold L", temp);
 	}
 
 	if(!rightEyeROI.empty()){
 		Mat temp;
-		threshold( rightEyeROI, rightEyeROI, 50, 255, 0 );
+		threshold( rightEyeROI, rightEyeROI, _thresh, 255, 0 );
 		resize(rightEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
 		threshold( temp, temp, 70, 255, 0 );
 		rightShift = searchFront(&temp, rightVarianzaArray, rightShiftArray);
-		//if(_debug)
+		if(_debug)
 			imshow("Threshold R", temp);
 	}
 

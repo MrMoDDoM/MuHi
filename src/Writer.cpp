@@ -15,27 +15,30 @@ float LETTER_DIM = 50;
 
 int fontFace = FONT_HERSHEY_TRIPLEX;
 
-//Letter alphabet[26];
-
 Action alphabet[30]; //Plust dot, question mark, space and comma
-Action actions[4];
+Action actions[5];
+
+Action bigger_selector[2];
+Action smaller_selector[5];
 
 Action *nowSelected;
 
-//std::stringstream phrase;
-
 std::string phrase;
 
-bool forward = true;
+bool forward = true, pause = false;
 
 bool leftClose, rightClose;
 
+int status = 0;
+
 char *email = "danielebarattieri@gmail.com";
+
+int count_left=0;
 
 void resetSelect(){
 	//We start from the first
 	nowSelected->selected = false;
-	nowSelected = &alphabet[0];
+	nowSelected = &bigger_selector[0];
 	nowSelected->selected = true;
 	//phrase.str("");
 }
@@ -95,27 +98,47 @@ void stepWriter(){
 
 void click(){
 
-	//std::stringstream o;
 	switch (nowSelected->type){
 	case 0: //The enter command
 		if(!strcmp(phrase.data(), "MRMODDOM"))
 			phrase = "Daniele";
 		else phrase = "";
 		//o << "espeak -v italian -s 290 " <<phrase.str();
-
-		//system(o.str());
 		break;
 
 	case 1: //Delete last char
-		if (phrase.size () > 0) phrase.resize (phrase.size () - 1);
+		if (phrase.size () > 0 && !pause) phrase.resize (phrase.size () - 1);
 		break;
 
-	case 2: //A normal char
-		phrase.append(nowSelected->text);
-		break;
+	 case 2: //A normal char
+                if(phrase.length() <= 20 && !pause)
+                        phrase.append(nowSelected->text);
+
+                resetSelect();
+                break;
+
+        case 3:
+                pause = !pause;
+                resetSelect();
+                break;
+
+        case 4: //Smaller selector
+                nowSelected->selected = false;
+                nowSelected = &alphabet[6 * nowSelected->id]; //I'M A GENIUS!
+                nowSelected->selected = true;
+                break;
+
+	case 5: //Bigger selector
+                nowSelected->selected = false;
+
+                if(nowSelected->id == 0)
+                        nowSelected = &smaller_selector[0];
+                else
+                        nowSelected = &actions[0];
+
+                nowSelected->selected = true;
+                break;
 	}
-
-	resetSelect();
 }
 
 int initWriter(){
@@ -145,17 +168,19 @@ int initWriter(){
 			alphabet[step].w = LETTER_DIM;
 			alphabet[step].selected = false;
 			alphabet[step].type = 2;
+			alphabet[step].id = step;
 
 			step++;
 		}
 	}
 
 	//Action button
-	for (int i = 0; i < 4; i++){
+	for (int i = 0; i < 5; i++){
 		actions[i].x = 400;
-		actions[i].y = 200 + ( i * LETTER_DIM);
+		actions[i].y = Y_STARTER + ( i * LETTER_DIM);
 		actions[i].h = LETTER_DIM;
 		actions[i].w = 200;
+		actions[i].id = i;
 	}
 
 	strcpy(actions[0].text, "Invio");
@@ -167,6 +192,42 @@ int initWriter(){
 	actions[2].type = 2;
 	strcpy(actions[3].text, "NO ");
 	actions[3].type = 2;
+	strcpy(actions[4].text, "Pausa ");
+      actions[4].type = 3;
+        
+        //Smaller selector
+        for (int i = 0; i < 5; i++){
+                smaller_selector[i].x = X_STARTER;
+                smaller_selector[i].y = Y_STARTER + ( i * LETTER_DIM);
+                smaller_selector[i].h = LETTER_DIM;
+                smaller_selector[i].w = LETTER_DIM * 6;
+                smaller_selector[i].next = &smaller_selector[i+1];
+                smaller_selector[i].before = &smaller_selector[i-1];
+                smaller_selector[i].type = 4;
+                smaller_selector[i].id = i;
+        }
+        smaller_selector[4].next = &smaller_selector[0]; //We correct the last one to point to the first
+        smaller_selector[0].before = &smaller_selector[4]; //We correct the first to point at the last
+        
+        //Bigger selector
+        bigger_selector[0].x = X_STARTER;
+        bigger_selector[0].y = Y_STARTER;
+        bigger_selector[0].h = LETTER_DIM * 5;
+        bigger_selector[0].w = LETTER_DIM * 6;
+        bigger_selector[0].next = &bigger_selector[1];
+        bigger_selector[0].before = &bigger_selector[1];
+        bigger_selector[0].type = 5;
+        bigger_selector[0].id = 0;
+
+        bigger_selector[1].x = 400;
+        bigger_selector[1].y = Y_STARTER;
+        bigger_selector[1].h = LETTER_DIM * 5;
+        bigger_selector[1].w = 200;
+        bigger_selector[1].next = &bigger_selector[0];
+        bigger_selector[1].before = &bigger_selector[0];
+        bigger_selector[1].type = 5;
+        bigger_selector[1].id = 1;
+
 
 	//Now we need to connect every Action to each next Action
 
@@ -177,34 +238,33 @@ int initWriter(){
 	}
 
 	alphabet[29].next = &actions[0];
-	actions[0].next = &actions[1];
-	actions[1].next = &actions[2];
-	actions[2].next = &actions[3];
-	actions[3].next = &alphabet[0];
-	//actions[7].next = &alphabet[0];
+        actions[0].next = &actions[1];
+        actions[1].next = &actions[2];
+        actions[2].next = &actions[3];
+        actions[3].next = &actions[4];
+        actions[4].next = &alphabet[0];
 
 	//AAAAAND BACKWARD! :D
 	for(int i = 29; i > 0; i--){
 		alphabet[i].before = &alphabet[i - 1];
 	}
 
-	alphabet[0].before = &actions[3];
-	actions[3].before = &actions[2];
-	actions[2].before = &actions[1];
-	actions[1].before = &actions[0];
-	actions[0].before = &alphabet[29];
+	alphabet[0].before = &actions[4];
+        actions[4].before = &actions[3];
+        actions[3].before = &actions[2];
+        actions[2].before = &actions[1];
+        actions[1].before = &actions[0];
+        actions[0].before = &alphabet[29];
 
-	//Start from the "A"
-	nowSelected = &alphabet[0];
-	resetSelect();
+        //Start from the "A"
+        nowSelected = &bigger_selector[0];
+        resetSelect();
 
 	return 0;
 }
 
 void drawHUD(Mat *in){
-	//*in = Scalar(59,61,40); //Background color
-
-	*in = Scalar(245,200,64);
+	*in = Scalar(245,200,64); //Background color
 
 	//Phrase background
 	rectangle(*in, Point(0,0), Point(in->cols, 100), Scalar::all(255), CV_FILLED ,1,0 );
@@ -214,13 +274,26 @@ void drawHUD(Mat *in){
 		alphabet[i].draw(in);
 	}
 
-	for(int i = 0 ; i < 8; i++){
+	for(int i = 0 ; i < 5; i++){
 		actions[i].draw(in);
 	}
+	
+	//Draw the smaller selector
+        for(int i = 0 ; i < 5; i++){
+                smaller_selector[i].draw(in);
+        }
 
-	//Draw the phrase
-	putText(*in, phrase, Point(40, 70), fontFace, 1, Scalar::all(0), 3, 1, false);
+        for(int i= 0; i < 2; i++){
+                bigger_selector[i].draw(in);
+        }
 
+        //Draw the phrase (if paused, draw "PAUSE"
+        if(pause){
+                putText(*in, "PAUSA", Point(40, 70), fontFace, 1, Scalar(0,0,255), 3, 1, false);
+        } else {
+                putText(*in, phrase, Point(40, 70), fontFace, 1, Scalar::all(0), 3, 1, false);
+        }
+        
 	//Draw eye status
 
 	std::stringstream status;
