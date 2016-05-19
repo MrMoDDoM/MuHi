@@ -12,15 +12,15 @@
 #include <stdio.h>
 #include <iostream>
 #include <exception>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+//#include <opencv/cv.h>
+//#include <opencv/highgui.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 using namespace cv;
 using namespace std;
 
 //GLOBAL
-char *MAIN_WIN_TITLE = "MuHi";
+static const char *MAIN_WIN_TITLE = "MuHi";
 int X_RESOLUTION = 640;
 int Y_RESOLUTION = 480;
 

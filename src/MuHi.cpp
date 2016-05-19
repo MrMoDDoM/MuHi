@@ -37,6 +37,7 @@
 #include "WebcamWorker.h"
 
 int init(){
+	cout<<"Apertura stream webcam..."<<endl;
 	//webcamWorker
 	if(initCamWorker())
 		return -1;
@@ -44,26 +45,30 @@ int init(){
 	//Istanzia memoria per la matrice dell'HUD
 	HUD = Mat::zeros(Y_RESOLUTION, X_RESOLUTION,  CV_8UC3);
 
+	cout<<"Inizializzazione interfaccia..."<<endl;
 	//Inizializza il Writer(alfabeto e memoria)
 	if(initWriter())
 		return -1;
 
+	cout<<"Tutto ok! Si parte!"<<endl;
 	//All went ok!
 	return 0;
 }
 
 //We need to ensure that all memory&devices are proprely released
 int exit(){
+	cout<<"Chiusura in corso..."<<endl;
 	fin = true;
-	//cam.release();
-
-	//Waitin for all sub-process to finish
-	//BlinkDetector.join();
+	destroyCamWorker();
 	return 0;
 }
 
-int main( int argc, char** argv ){
+int exitWithError(std::string msg){
+	cout<<msg<<endl;
+	return exit();
+}
 
+int main( int argc, char** argv ){
 
 	int step = 0;
 	noError = true;
@@ -74,10 +79,12 @@ int main( int argc, char** argv ){
 
 	int blinkTresh = 10;
 
-	if(init())
-		fin = true;
+	int blinkStatus = 0;
 
-	time_t te;
+	if(init())
+		exitWithError("Error initializing the system! STOP!");
+
+	//clock_t te;
 
 	while(!fin){
 		//For this probably is better use an enum...
@@ -85,12 +92,13 @@ int main( int argc, char** argv ){
 		// 1 - right blink
 		// 2 - left blink
 		// 3 - both blink
-		int blinkStatus = 0;
 
-		getFrame(&frame);
+		blinkStatus = 0;
+
+		if(!getFrame(&frame))
+			exitWithError("Error getting frame! STOP!");
+
 		blinkStatus = detectBlink(&frame, blinkTresh, debug, thres);
-
-		//cout<< "[INFO] detectBlink ci ha messo: "<< std::fixed << std::setw( 11 ) << std::setprecision( 6 )<<( te / CLOCKS_PER_SEC ) / 1000<<" millisecondi"<<endl;
 
 		if(blinkStatus == old_status){
 			countingSameStatus++;
@@ -100,13 +108,10 @@ int main( int argc, char** argv ){
 		}
 
 		//Passare al Writer lo stato del blinink (blinkRigth, blinkLeft) e farlo agire di conseguenza
-		//if(blinkStatus)
 		if(countingSameStatus >= 3){
 			countingSameStatus = 0;
 			checkBlink(blinkStatus);
 		}
-
-		//cout<<"Actual state: "<< blinkStatus<<endl;
 
 		if(step >= STEP_WAIT){
 			step = 0;
@@ -142,6 +147,7 @@ int main( int argc, char** argv ){
 			stringstream out;
 			out<<"Status: "<<blinkStatus<<" - Velocity: "<<STEP_WAIT<<" - Sensibility: "<<blinkTresh<<" - Soglia occhio: "<<thres;
 			cout<<out.str()<<endl;
+			//cout<< "[INFO] detectBlink ci ha messo: "<< std::fixed << std::setw( 11 ) << std::setprecision( 6 )<<( te / CLOCKS_PER_SEC ) / 1000<<" millisecondi"<<endl;
 			putText(frame, out.str(), Point(10,15), FONT_HERSHEY_TRIPLEX, 0.5, Scalar::all(255), 1, 1, false);
 			imshow("WebCam", frame);
 		}
@@ -150,5 +156,6 @@ int main( int argc, char** argv ){
 	}
 
 	exit();
+	cout<<"Grazie per aver usato MuHi! Alla prossima!"<<endl;
 	return 0;
 }

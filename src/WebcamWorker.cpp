@@ -8,9 +8,6 @@
 #include "WebcamWorker.h"
 
 VideoCapture cam;
-//String face_cascade_name = "/usr/local/share/OpenCV/lbpcascades/lbpcascade_frontalface.xml";
-//String eyes_left_cascade_name = "/usr/local/share/OpenCV/haarcascades/haarcascade_mcs_lefteye.xml";
-//String eyes_right_cascade_name = "/usr/local/share/OpenCV/haarcascades/haarcascade_mcs_righteye.xml";
 String face_cascade_name = "lbpcascade_frontalface.xml";
 String eyes_left_cascade_name = "haarcascade_mcs_lefteye.xml";
 String eyes_right_cascade_name = "haarcascade_mcs_righteye.xml";
@@ -59,19 +56,32 @@ int initCamWorker() {
 	return 0;
 }
 
-void getFrame(Mat *in){
+int destroyCamWorker(){
+	if(!cam.isOpened()){
+		return -1;
+	}
+
+	cam.release();
+	return 0;
+}
+
+bool getFrame(Mat *in){
 
 	if(!cam.isOpened()){
 		printf("No open webcam\n");
+		return false;
 	}
 
 	cam.read(*in);
 
 	if(in->empty()){
 		printf("No frame!\n");
+		return false;
 	}
 
 	flip( *in, *in, 1);
+
+	return true;
 }
 
 Rect detectCascade(Mat *in, CascadeClassifier *cc, Size _size){
@@ -85,7 +95,7 @@ Rect detectCascade(Mat *in, CascadeClassifier *cc, Size _size){
 
 	//We consider only ONE face, the biggest one...
 	if(results.size() != 0){
-		for(int i=0; i < results.size(); i++){
+		for(unsigned int i=0; i < results.size(); i++){
 			if(results[i].area() >= out.area()){
 				out = results[i];
 			}
@@ -123,7 +133,8 @@ void checkStability(Rect *newer, Rect *old){
 float searchFront(Mat *in, int *arrVarianza, int *arrShift){
 	//Mat his = Mat::zeros(in->rows, in->cols, CV_8UC1);
 
-	int index_left = -1, index_right = -1, q;
+	//int index_left = -1, index_right = -1,
+	int q;
 
 	int *array = (int *)malloc( (in->cols) * sizeof (int));
 
@@ -263,7 +274,7 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 	Mat leftEyeROI;
 	Mat rightEyeROI;
 
-	float rightShift = 0.0, leftShift = 0.0;
+	//float rightShift = 0.0, leftShift = 0.0;
 
 	cvtColor( *in, frame_gray, CV_BGR2GRAY );
 	GaussianBlur( *in, *in, Size(3, 3), 1, 1 );
@@ -395,7 +406,8 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 		resize(leftEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1);
 		threshold( temp, temp, 70, 255, 0 );
-		leftShift = searchFront(&temp, leftVarianzaArray, leftShiftArray);
+		//leftShift =
+		searchFront(&temp, leftVarianzaArray, leftShiftArray);
 		if(_debug)
 			imshow("Threshold L", temp);
 	}
@@ -406,7 +418,8 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 		resize(rightEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
 		threshold( temp, temp, 70, 255, 0 );
-		rightShift = searchFront(&temp, rightVarianzaArray, rightShiftArray);
+		//rightShift =
+		searchFront(&temp, rightVarianzaArray, rightShiftArray);
 		if(_debug)
 			imshow("Threshold R", temp);
 	}
@@ -480,7 +493,7 @@ Rect detectFace( Mat *in ){
 
     //We consider only ONE face, the biggest one...
     if(faces.size() != 0){
-        for(int i=0; i< faces.size(); i++){
+        for(unsigned int i=0; i< faces.size(); i++){
             if(faces[i].area() >= out.area()){
                 out = faces[i];
             }

@@ -15,7 +15,7 @@ float LETTER_DIM = 50;
 
 int fontFace = FONT_HERSHEY_TRIPLEX;
 
-Action alphabet[30]; //Plust dot, question mark, space and comma
+Action alphabet[30]; //Plus dot, question mark, space and comma
 Action actions[5];
 
 Action bigger_selector[2];
@@ -31,7 +31,7 @@ bool leftClose, rightClose;
 
 int status = 0;
 
-char *email = "danielebarattieri@gmail.com";
+static const char *email = "danielebarattieri@gmail.com";
 
 int count_left=0;
 
@@ -40,7 +40,6 @@ void resetSelect(){
 	nowSelected->selected = false;
 	nowSelected = &bigger_selector[0];
 	nowSelected->selected = true;
-	//phrase.str("");
 }
 
 void checkBlink(int blinkStatus){
@@ -103,7 +102,7 @@ void click(){
 		if(!strcmp(phrase.data(), "MRMODDOM"))
 			phrase = "Daniele";
 		else phrase = "";
-		//o << "espeak -v italian -s 290 " <<phrase.str();
+		//Here we should introduce some code to make the pc speaks the phrase
 		break;
 
 	case 1: //Delete last char
@@ -250,15 +249,15 @@ int initWriter(){
 	}
 
 	alphabet[0].before = &actions[4];
-        actions[4].before = &actions[3];
-        actions[3].before = &actions[2];
-        actions[2].before = &actions[1];
-        actions[1].before = &actions[0];
-        actions[0].before = &alphabet[29];
+	actions[4].before = &actions[3];
+	actions[3].before = &actions[2];
+	actions[2].before = &actions[1];
+	actions[1].before = &actions[0];
+	actions[0].before = &alphabet[29];
 
-        //Start from the "A"
-        nowSelected = &bigger_selector[0];
-        resetSelect();
+	//Start from the "A"
+	nowSelected = &bigger_selector[0];
+	resetSelect();
 
 	return 0;
 }
@@ -295,9 +294,7 @@ void drawHUD(Mat *in){
         }
         
 	//Draw eye status
-
 	std::stringstream status;
-
 	status.str("");
 
 	if(leftClose)
@@ -318,7 +315,6 @@ void drawHUD(Mat *in){
 
 
 	//Write email
-
 	putText(*in, email, Point(640 - 600, 480 - 10), fontFace, 0.5, Scalar::all(0), 1, 1, false);
 }
 
@@ -349,10 +345,10 @@ Action* Action::getBefore(){
 		return before;
 }
 
+//Me serve ancora questa sotto-classe?
 void Letter::draw(Mat *in){
 
 	//E' possibile chiamare il metodo della propria classe super?
-	//Action::draw(in);
 
 	int thickness;
 	Scalar color;

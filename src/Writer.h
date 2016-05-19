@@ -12,8 +12,8 @@
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+//#include <opencv/cv.h>
+//#include <opencv/highgui.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 using namespace cv;
@@ -35,7 +35,7 @@ void click();
 
 class Action{
 private:
-	double char_fontScale = 1.5;
+	static const double char_fontScale = 1.5;
 
 public:
 	Action *getNext();
@@ -53,8 +53,8 @@ public:
 
 };
 
+//Mi serve ancora questa sotto-classe?
 class Letter : public Action{
-
 
 public:
 	void draw(Mat *in);

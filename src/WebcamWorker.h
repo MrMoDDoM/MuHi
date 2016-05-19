@@ -11,15 +11,15 @@
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+//#include <opencv/cv.h>
+//#include <opencv/highgui.h>
 #include <opencv2/opencv.hpp>
-
 
 using namespace cv;
 
 int initCamWorker();
-void getFrame(Mat *in);
+int destroyCamWorker();
+bool getFrame(Mat *in);
 Rect detectFace(Mat *in);
 int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh);
 void checkStability(Rect *newer, Rect *old);
