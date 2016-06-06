@@ -42,6 +42,11 @@ int initCamWorker() {
 	//Qui dovrò preoccuparmi di gestire le webcam...
 	cam.open(0);
 
+	if(!cam.isOpened()){
+		printf("No open webcam\n");
+		return -1;
+	}
+
 	if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading FACE CLASSIFIER\n"); return -1; };
 	if( !eyes_cascade_left.load( eyes_left_cascade_name ) ){ printf("--(!)Error loading LEFT EYE CLASSIFIER\n"); return -1; };
 	if( !eyes_cascade_right.load( eyes_right_cascade_name ) ){ printf("--(!)Error loading RIGHT EYE CLASSIFIER\n"); return -1; };
