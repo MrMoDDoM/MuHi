@@ -78,11 +78,8 @@ bool getFrame(Mat *in){
 		printf("No open webcam\n");
 		return false;
 	}
-	//Trys 10 times to get the frame
-	while(in->empty() && trys<=10){
-		trys++;
-		cam.read(*in);
-	}
+
+	cam.read(*in);
 
 	if(in->empty()){
 		printf("No frame!\n");

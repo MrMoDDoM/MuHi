@@ -40,6 +40,7 @@ void resetSelect(){
 	nowSelected->selected = false;
 	nowSelected = &bigger_selector[0];
 	nowSelected->selected = true;
+	forward = true;
 }
 
 void checkBlink(int blinkStatus){
@@ -103,6 +104,7 @@ void click(){
 			phrase = "Daniele";
 		else phrase = "";
 		//Here we should introduce some code to make the pc speaks the phrase
+		resetSelect();
 		break;
 
 	case 1: //Delete last char
@@ -110,33 +112,33 @@ void click(){
 		break;
 
 	 case 2: //A normal char
-                if(phrase.length() <= 20 && !pause)
-                        phrase.append(nowSelected->text);
+			if(phrase.length() <= 20 && !pause)
+					phrase.append(nowSelected->text);
 
-                resetSelect();
-                break;
+			resetSelect();
+			break;
 
-        case 3:
-                pause = !pause;
-                resetSelect();
-                break;
+	case 3:
+			pause = !pause;
+			resetSelect();
+			break;
 
-        case 4: //Smaller selector
-                nowSelected->selected = false;
-                nowSelected = &alphabet[6 * nowSelected->id]; //I'M A GENIUS!
-                nowSelected->selected = true;
-                break;
+	case 4: //Smaller selector
+			nowSelected->selected = false;
+			nowSelected = &alphabet[6 * nowSelected->id]; //I'M A GENIUS!
+			nowSelected->selected = true;
+			break;
 
 	case 5: //Bigger selector
-                nowSelected->selected = false;
+			nowSelected->selected = false;
 
-                if(nowSelected->id == 0)
-                        nowSelected = &smaller_selector[0];
-                else
-                        nowSelected = &actions[0];
+			if(nowSelected->id == 0)
+					nowSelected = &smaller_selector[0];
+			else
+					nowSelected = &actions[0];
 
-                nowSelected->selected = true;
-                break;
+			nowSelected->selected = true;
+			break;
 	}
 }
 
@@ -286,12 +288,14 @@ void drawHUD(Mat *in){
                 bigger_selector[i].draw(in);
         }
 
+        Scalar color;
         //Draw the phrase (if paused, draw "PAUSE"
         if(pause){
-                putText(*in, "PAUSA", Point(40, 70), fontFace, 1, Scalar(0,0,255), 3, 1, false);
+        	color = Scalar(0,0,255);
         } else {
-                putText(*in, phrase, Point(40, 70), fontFace, 1, Scalar::all(0), 3, 1, false);
+        	color = Scalar::all(0);
         }
+        putText(*in, phrase, Point(40, 70), fontFace, 1, color, 3, 1, false);
         
 	//Draw eye status
 	std::stringstream status;
