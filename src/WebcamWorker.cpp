@@ -67,12 +67,17 @@ int destroyCamWorker(){
 
 bool getFrame(Mat *in){
 
+	int trys = 0;
+
 	if(!cam.isOpened()){
 		printf("No open webcam\n");
 		return false;
 	}
-
-	cam.read(*in);
+	//Trys 10 times to get the frame
+	while(in->empty() && trys<=10){
+		trys++;
+		cam.read(*in);
+	}
 
 	if(in->empty()){
 		printf("No frame!\n");
