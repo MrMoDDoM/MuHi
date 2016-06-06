@@ -157,5 +157,6 @@ int main( int argc, char** argv ){
 
 	exit();
 	cout<<"Grazie per aver usato MuHi! Alla prossima!"<<endl;
+	getchar();
 	return 0;
 }
