@@ -37,7 +37,11 @@ const int eyeArrayDim = 6;
 int leftVarianzaArray[eyeArrayDim], rightVarianzaArray[eyeArrayDim];
 int leftShiftArray[eyeArrayDim], rightShiftArray[eyeArrayDim];
 
+bool first_time;
+
 int initCamWorker() {
+
+	first_time = true;
 
 	//Qui dovrò preoccuparmi di gestire le webcam...
 	cam.open(0);
@@ -72,14 +76,20 @@ int destroyCamWorker(){
 
 bool getFrame(Mat *in){
 
-	int trys = 0;
-
 	if(!cam.isOpened()){
 		printf("No open webcam\n");
 		return false;
 	}
 
-	cam.read(*in);
+	//Wait for the cam to wakeup
+	if(first_time){
+		for(int i=0; i<10; i++)
+			cam.read(*in);
+
+		first_time = false;
+	} else {
+		cam.read(*in);
+	}
 
 	if(in->empty()){
 		printf("No frame!\n");
