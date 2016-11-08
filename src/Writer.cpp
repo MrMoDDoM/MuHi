@@ -59,6 +59,7 @@ void checkBlink(int blinkStatus){
 			rightClose = true;
 			click();
 		}
+		forward = true;
 		break;
 
 	case 2: //Right open - left close
@@ -109,6 +110,7 @@ void click(){
 
 	case 1: //Delete last char
 		if (phrase.size () > 0 && !pause) phrase.resize (phrase.size () - 1);
+		resetSelect();
 		break;
 
 	 case 2: //A normal char
@@ -278,7 +280,7 @@ void drawHUD(Mat *in){
 	for(int i = 0 ; i < 5; i++){
 		actions[i].draw(in);
 	}
-	
+
 	//Draw the smaller selector
         for(int i = 0 ; i < 5; i++){
                 smaller_selector[i].draw(in);
@@ -289,14 +291,14 @@ void drawHUD(Mat *in){
         }
 
         Scalar color;
-        //Draw the phrase (if paused, draw "PAUSE"
+        //Draw the phrase
         if(pause){
         	color = Scalar(0,0,255);
         } else {
         	color = Scalar::all(0);
         }
         putText(*in, phrase, Point(40, 70), fontFace, 1, color, 3, 1, false);
-        
+
 	//Draw eye status
 	std::stringstream status;
 	status.str("");
@@ -306,7 +308,8 @@ void drawHUD(Mat *in){
 	else
 		status<<"Left Open";
 
-	putText(*in, status.str(), Point(640 - 200, 480 - 400), fontFace, 1, Scalar::all(0), 1, 1, false);
+	//putText(*in, status.str(), Point(640 - 200, 480 - 400), fontFace, 1, Scalar::all(0), 1, 1, false);
+	putText(*in, status.str(), Point(640 - 200, 480 - 400), fontFace, 1, color, 1, 1, false);
 
 	status.str("");
 
@@ -315,7 +318,8 @@ void drawHUD(Mat *in){
 	else
 		status<<"Right Open";
 
-	putText(*in, status.str(), Point(640 - 200, 480 - 450), fontFace, 1, Scalar::all(0), 1, 1, false);
+	//putText(*in, status.str(), Point(640 - 200, 480 - 450), fontFace, 1, Scalar::all(0), 1, 1, false);
+	putText(*in, status.str(), Point(640 - 200, 480 - 450), fontFace, 1, color, 1, 1, false);
 
 
 	//Write email
