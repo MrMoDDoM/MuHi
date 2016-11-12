@@ -79,6 +79,10 @@ const int eyeArrayDim = 6;
 int leftVarianzaArray[eyeArrayDim], rightVarianzaArray[eyeArrayDim];
 int leftShiftArray[eyeArrayDim], rightShiftArray[eyeArrayDim];
 
+int left_thresh = 80;
+int right_thresh = 80;
+
+
 bool first_time;
 
 int initCamWorker() {
@@ -188,6 +192,27 @@ void checkStability(Rect *newer, Rect *old){
 		//faceMoved = false;
 	}
 }
+
+//Count how many balck pixels are in the image
+//This is usefull for the auto-adjusting threshold - THANKS NAT!
+int countPixel( Mat *in ){
+	int pixelsNum = 0;
+	int i, j;
+
+	Scalar pixel;
+
+	for( i = 0; i < in->cols; i++){
+		for( j = 0; j < in->rows; j++){
+			pixel = in->at<uchar>(Point(i,j)); //Attenzione all'ordering!
+			if( !pixel.val[0] ){
+				pixelsNum++;
+			}
+		}
+	}
+
+	return pixelsNum;
+}
+
 //Return true when the eye is closed
 float searchFront(Mat *in, int *arrVarianza, int *arrShift){
 	//Mat his = Mat::zeros(in->rows, in->cols, CV_8UC1);
@@ -461,11 +486,17 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 
 	if(!leftEyeROI.empty()){
 		Mat temp;
-		threshold( leftEyeROI, leftEyeROI, _thresh, 255, 0 );
+		threshold( leftEyeROI, leftEyeROI, left_thresh, 255, 0 );
 		resize(leftEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1);
 		threshold( temp, temp, 70, 255, 0 );
 		//leftShift =
+		//Try to auto-adjust the threshold
+		if(countPixel(&temp) < _thresh)
+			left_thresh++;
+		else
+			left_thresh--;
+
 		searchFront(&temp, leftVarianzaArray, leftShiftArray);
 		if(_debug)
 			imshow("Threshold L", temp);
@@ -473,11 +504,17 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 
 	if(!rightEyeROI.empty()){
 		Mat temp;
-		threshold( rightEyeROI, rightEyeROI, _thresh, 255, 0 );
+		threshold( rightEyeROI, rightEyeROI, right_thresh, 255, 0 );
 		resize(rightEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
 		threshold( temp, temp, 70, 255, 0 );
 		//rightShift =
+		//Try to auto-adjust the threshold
+		if(countPixel(&temp) < _thresh)
+			right_thresh++;
+		else
+			right_thresh--;
+
 		searchFront(&temp, rightVarianzaArray, rightShiftArray);
 		if(_debug)
 			imshow("Threshold R", temp);

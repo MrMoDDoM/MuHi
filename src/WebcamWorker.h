@@ -63,6 +63,7 @@ int initCamWorker();
 int destroyCamWorker();
 bool getFrame(Mat *in);
 Rect detectFace(Mat *in);
+int countPixel( Mat *in );
 int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh);
 void checkStability(Rect *newer, Rect *old);
 float searchFront(Mat *in, int *arr);

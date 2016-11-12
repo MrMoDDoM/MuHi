@@ -89,7 +89,7 @@ int main( int argc, char** argv ){
 	int step = 0;
 	noError = true;
 	fin = false;
-	int thres = 50;
+	int thres = 350;
 
 	int old_status = 0, countingSameStatus = 0;
 
@@ -160,6 +160,7 @@ int main( int argc, char** argv ){
 		imshow(MAIN_WIN_TITLE, HUD);
 
 		if(debug){
+			system("clear");
 			stringstream out;
 			out<<"Status: "<<blinkStatus<<" - Velocity: "<<STEP_WAIT<<" - Sensibility: "<<blinkTresh<<" - Soglia occhio: "<<thres;
 			cout<<out.str()<<endl;
@@ -173,6 +174,5 @@ int main( int argc, char** argv ){
 
 	exit();
 	cout<<"Grazie per aver usato MuHi! Alla prossima!"<<endl;
-	getchar();
 	return 0;
 }
