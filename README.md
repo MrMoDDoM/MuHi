@@ -2,6 +2,8 @@
                      
 ##<t>Multifunctionals E(/Hi)yes
 
+[![MuHi - Test](http://img.youtube.com/vi/SLFAlyaToa4/0.jpg)](https://www.youtube.com/watch?v=SLFAlyaToa4 "MuHi - Beta Test")
+
    @author: Daniele Barattieri di San Pietro<br>
    @email : danielebarattieri[at]gmail.com<br>
    @copyright: 2016<br>
