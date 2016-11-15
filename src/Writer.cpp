@@ -228,16 +228,16 @@ int initWriter(){
 		actions[i].id = i;
 	}
 
-	strcpy(actions[0].text, "Invio");
+	strcpy(actions[0].text, "Enter");
 	actions[0].type = 0;
 	strcpy(actions[1].text, "Canc");
 	actions[1].type = 1;
 
-	strcpy(actions[2].text, "SI ");
+	strcpy(actions[2].text, "YES ");
 	actions[2].type = 2;
 	strcpy(actions[3].text, "NO ");
 	actions[3].type = 2;
-	strcpy(actions[4].text, "Pausa ");
+	strcpy(actions[4].text, "Pause ");
       actions[4].type = 3;
         
         //Smaller selector
