@@ -22,7 +22,7 @@
 //============================================================================
 // Name        : MuHi.cpp
 // Author      : MrMoDDoM
-// Version     : 0.5
+// Version     : 1.0
 // Copyright   : GNU/GPL
 // Description : MuHi in C++, Ansi-style
 //============================================================================
@@ -49,31 +49,42 @@
 
 
 #include "MuHi.h"
-#include "Writer.h"
 #include "WebcamWorker.h"
+#include "OutputWorker.h"
 
 int init(){
-	cout<<"Apertura stream webcam..."<<endl;
+
+	cout<<"Setting variables..."<<endl;
+	//xdo = xdo_new(":0.0");
+	debug = true;
+	noError = true;
+	fin = false;
+
+	cout<<"Opening webcam stream..."<<endl;
 	//webcamWorker
 	if(initCamWorker())
 		return -1;
 
-	//Istanzia memoria per la matrice dell'HUD
-	HUD = Mat::zeros(Y_RESOLUTION, X_RESOLUTION,  CV_8UC3);
-
-	cout<<"Inizializzazione interfaccia..."<<endl;
-	//Inizializza il Writer(alfabeto e memoria)
-	if(initWriter())
+	cout<<"Setting up output stream..."<<endl;
+	if(initOutputWorker())
 		return -1;
 
-	cout<<"Tutto ok! Si parte!"<<endl;
+	//Istanzia memoria per la matrice dell'HUD
+//	HUD = Mat::zeros(Y_RESOLUTION, X_RESOLUTION,  CV_8UC3);
+
+//	cout<<"Inizializzazione interfaccia..."<<endl;
+	//Inizializza il Writer(alfabeto e memoria)
+//	if(initWriter())
+//		return -1;
+
+	cout<<"All ok! Let's go!"<<endl;
 	//All went ok!
 	return 0;
 }
 
 //We need to ensure that all memory&devices are proprely released
 int exit(){
-	cout<<"Chiusura in corso..."<<endl;
+	cout<<"Closing..."<<endl;
 	fin = true;
 	destroyCamWorker();
 	return 0;
@@ -84,23 +95,55 @@ int exitWithError(std::string msg){
 	return exit();
 }
 
+//This function procede to open an external application
+int open_program( FILE *f, std::string path){
+    	f = popen (path.c_str(), "w");
+	if (!f){
+		perror ("Error on popen!!!");
+		return 1;
+	}
+	else return 0;
+}
+
 int main( int argc, char** argv ){
 
-	int step = 0;
-	noError = true;
-	fin = false;
+	if (argc > 4) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
+        	std::cout << "Usage is \"MuHi [-d] [-h] PROGRAM\"\n"; // Inform the user of how to use the program
+        	exit(0);
+    	} else { // if we got enough parameters...
+        	char* myFile;
+        	std::cout << argv[0];
+        	for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
+                	                          * Note that we're starting on 1 because we don't need to know the 
+                        	                  * path of the program, which is stored in argv[0] */
+            		if (i + 1 != argc) // Check that we haven't finished parsing already
+                		if (argv[i] == "-f") {
+                    		// We know the next argument *should* be the filename:
+                    		myFile = argv[i + 1];
+                	} else if (argv[i] == "-d") {
+                    		debug = 1;
+                	} else if (argv[i] == "-h") {
+                    		cout<<"./MuHi [-d] program"<<endl;
+				exit(0);
+                	} else {
+                    		std::cout << "Not enough or invalid arguments, please try again.\n";
+                   		exit(0);
+            		}
+
+           	 	std::cout << argv[i] << " ";
+        	}
+    	}
+
 	int thres = 350;
-
+	int step = 0;
 	int old_status = 0, countingSameStatus = 0;
-
 	int blinkTresh = 10;
-
 	int blinkStatus = 0;
 
 	if(init())
 		exitWithError("Error initializing the system! STOP!");
 
-	//clock_t te;
+	//debug = true; //Just for testing pourpose
 
 	while(!fin){
 		//For this probably is better use an enum...
@@ -108,6 +151,8 @@ int main( int argc, char** argv ){
 		// 1 - right blink
 		// 2 - left blink
 		// 3 - both blink
+		// 4 - no face
+		// 5 - critcal error! Shut everything down, in the name of the Great Spaghetti Monster!!!
 
 		blinkStatus = 0;
 
@@ -116,6 +161,7 @@ int main( int argc, char** argv ){
 
 		blinkStatus = detectBlink(&frame, blinkTresh, debug, thres);
 
+		//Some anti bounce check
 		if(blinkStatus == old_status){
 			countingSameStatus++;
 		} else {
@@ -124,55 +170,55 @@ int main( int argc, char** argv ){
 		}
 
 		//Passare al Writer lo stato del blinink (blinkRigth, blinkLeft) e farlo agire di conseguenza
-		if(countingSameStatus >= 3){
+		if(countingSameStatus >= 1){
 			countingSameStatus = 0;
-			checkBlink(blinkStatus);
+//			checkBlink(blinkStatus);
+			//Here we will pass the status's value to the active program
+			//fprintf (program, "%i\n", blinkStatus);
+			sendKeyboardKey(blinkStatus);
 		}
 
-		if(step >= STEP_WAIT){
-			step = 0;
-			stepWriter();
-		}
+//		if(step >= STEP_WAIT){
+//			step = 0;
+//			stepWriter();
+//		}
 
 		//Refersh HUD from Writer
-		drawHUD(&HUD);
+//		drawHUD(&HUD);
 
-		//Controllo tastiera
+		//Keyboard controls
 		int c = waitKey(10);
 		if( (char)c == 27 ) { fin = true; }
-		if( (char)c == 'u' ) { stepWriter(); }
-		if( (char)c == 'b' ) { click(); step = 0;}
-		if( (char)c == '+' ) { STEP_WAIT = STEP_WAIT + 2; }
-		if( (char)c == '-' ) { STEP_WAIT = STEP_WAIT - 2; }
+//		if( (char)c == 'u' ) { stepWriter(); }
+//		if( (char)c == 'b' ) { click(); step = 0;}
+//		if( (char)c == '+' ) { STEP_WAIT = STEP_WAIT + 2; }
+//		if( (char)c == '-' ) { STEP_WAIT = STEP_WAIT - 2; }
 		if( (char)c == 'a' ) { blinkTresh--; }
 		if( (char)c == 's' ) { blinkTresh++; }
 		if( (char)c == 'c' ) { thres--; }
 		if( (char)c == 'v' ) { thres++; }
-		if( (char)c == 'd' ) {
+/*		if( (char)c == 'd' ) {
 			if(debug){
 				debug = false;
 				destroyWindow("Webcam");
 			} else debug = true;
 
-		}
+		}*/
 
-		//SHOW HUD
-		imshow(MAIN_WIN_TITLE, HUD);
-
+		//If the debug is activated, write HUD with usefull informations
 		if(debug){
 			system("clear");
 			stringstream out;
-			out<<"Status: "<<blinkStatus<<" - Velocity: "<<STEP_WAIT<<" - Sensibility: "<<blinkTresh<<" - Soglia occhio: "<<thres;
+			out<<"Status: "<<blinkStatus<<" - Sensibility: "<<blinkTresh<<" - Eyes threshold: "<<thres;
 			cout<<out.str()<<endl;
-			//cout<< "[INFO] detectBlink ci ha messo: "<< std::fixed << std::setw( 11 ) << std::setprecision( 6 )<<( te / CLOCKS_PER_SEC ) / 1000<<" millisecondi"<<endl;
 			putText(frame, out.str(), Point(10,15), FONT_HERSHEY_TRIPLEX, 0.5, Scalar::all(255), 1, 1, false);
 			imshow("WebCam", frame);
 		}
 
-		step++;
+		//step++;
 	}
 
 	exit();
-	cout<<"Grazie per aver usato MuHi! Alla prossima!"<<endl;
+	cout<<"Thankyou for using MuHi! See you next time!"<<endl;
 	return 0;
 }

@@ -60,6 +60,9 @@
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
+int X_RESOLUTION = 640;
+int Y_RESOLUTION = 480;
+
 void resetSelect();
 void checkBlink(int blinkStatus);
 int initWriter();

@@ -50,9 +50,9 @@
 #include "WebcamWorker.h"
 
 VideoCapture cam;
-String face_cascade_name = "lbpcascade_frontalface.xml";
-String eyes_left_cascade_name = "haarcascade_mcs_lefteye.xml";
-String eyes_right_cascade_name = "haarcascade_mcs_righteye.xml";
+String face_cascade_name = "cascade/lbpcascade_frontalface.xml";
+String eyes_left_cascade_name = "cascade/haarcascade_mcs_lefteye.xml";
+String eyes_right_cascade_name = "cascade/haarcascade_mcs_righteye.xml";
 CascadeClassifier face_cascade;
 CascadeClassifier eyes_cascade_left;
 CascadeClassifier eyes_cascade_right;
@@ -81,7 +81,6 @@ int leftShiftArray[eyeArrayDim], rightShiftArray[eyeArrayDim];
 
 int left_thresh = 80;
 int right_thresh = 80;
-
 
 bool first_time;
 
@@ -367,7 +366,7 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 	//May be here we can use pointer for passing data from the detectFace function..
 	Rect candidate = detectCascade(&frame_gray, &face_cascade, Size(80,80));//detectFace(&frame_gray); //Detect a face
 	if(candidate.area() == 0) //No face found for this turn?
-		return 0;
+		return 4;
 
 	if(face.area() == 0) //We found a face in this frame, but we don't have a candidate?
 		face = candidate;

@@ -238,8 +238,8 @@ int initWriter(){
 	strcpy(actions[3].text, "NO ");
 	actions[3].type = 2;
 	strcpy(actions[4].text, "Pause ");
-      actions[4].type = 3;
-        
+        actions[4].type = 3;
+
         //Smaller selector
         for (int i = 0; i < 5; i++){
                 smaller_selector[i].x = X_STARTER;
@@ -253,7 +253,7 @@ int initWriter(){
         }
         smaller_selector[4].next = &smaller_selector[0]; //We correct the last one to point to the first
         smaller_selector[0].before = &smaller_selector[4]; //We correct the first to point at the last
-        
+
         //Bigger selector
         bigger_selector[0].x = X_STARTER;
         bigger_selector[0].y = Y_STARTER;
@@ -415,3 +415,41 @@ void Letter::draw(Mat *in){
 }
 
 
+int main(){
+
+	bool fin = false;
+
+	int STEP_WAIT = 100;
+
+	Mat HUD = Mat::zeros(Y_RESOLUTION, X_RESOLUTION,  CV_8UC3);
+
+	int step = 0;
+	if(initWriter())
+		return -1;
+
+	while(!fin){
+		step ++;
+
+		int c = waitKey(10);
+		if( (char)c == 27 ) { fin = true; } //Esc key
+		if( (char)c == '+') { STEP_WAIT = STEP_WAIT + 2; }
+		if( (char)c == '-') { STEP_WAIT = STEP_WAIT - 2; }
+		if( (char)c == '0') { checkBlink(0); }
+		if( (char)c == '1') { checkBlink(1); }
+		if( (char)c == '2') { checkBlink(2); }
+		if( (char)c == '3') { checkBlink(3); }
+		if( (char)c == '4') { checkBlink(4); }
+
+		drawHUD(&HUD);
+
+		std::cout<<"Tasto: "<<c<<std::endl;
+
+		if(step >= STEP_WAIT){
+			step = 0;
+			stepWriter();
+		}
+
+		imshow("Writer",HUD);
+	}
+	return 0;
+}

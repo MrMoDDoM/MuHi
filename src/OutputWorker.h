@@ -20,9 +20,9 @@
 ////////////////////////////////////////////////////////////////
 
 //============================================================================
-// Name        : MuHi.cpp
+// Name        : OutputWorker.h
 // Author      : MrMoDDoM
-// Version     : 0.5
+// Version     : 1.0
 // Copyright   : GNU/GPL
 // Description : MuHi in C++, Ansi-style
 //============================================================================
@@ -47,40 +47,21 @@
 
 */
 
-#ifndef MUHI_H_
-#define MUHI_H_
+#ifndef OUTPUTWORKER_H_
+#define OUTPUTWORKER_H_
 
 #include <iostream>
+#include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <exception>
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
+extern "C"{
+	#include <xdo.h>
+}
 
-using namespace cv;
-using namespace std;
+//VARIABLES
+//xdo_t *xdo;
 
-//GLOBAL
-static const char *MAIN_WIN_TITLE = "MuHi";
-int X_RESOLUTION = 640;
-int Y_RESOLUTION = 480;
+//FUNCTIONS
+int initOutputWorker();
+int sendKeyboardKey(int blkSts);
 
-////////////////////////////////////
-//  VARIABLES
-////////////////////////////////////
-Mat frame, HUD;
-bool blinkRigth, blinkLeft, noError, fin;
-char key;
-int STEP_WAIT = 30;
-bool debug = false;
-FILE *program;
-////////////////////////////////////
-////////////////////////////////////
-//  FUNCTIONS
-////////////////////////////////////
-int init();
-int exit();
-int open_program( FILE *f, std::string path);
-//int sendKeyboardKey(int blkSts);
-////////////////////////////////////
-#endif /* MUHI_H_ */
+#endif //OUTPTWORKER_H_
