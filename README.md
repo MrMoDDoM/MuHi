@@ -7,7 +7,9 @@
    @author: Daniele Barattieri di San Pietro<br>
    @email : danielebarattieri[at]gmail.com<br>
    @copyright: 2016<br>
-   @version: 0.5 - open beta
+   @version: 1.0 - public beta
+   
+# README UNDER COSTRUCTION!
 
   ----------------------------------------------------------
   This project is hosted and supported by the hackersapece MuHack,<br>
@@ -30,49 +32,86 @@ In future version, I'm thinking to implement some sort of system to interact wit
 With the hackerspace MuHack, we are hosting a separate repo for all your ideas and code: it is not important that you can or cannot code something, we need ideas!
 
 ## Installation & Usange
-**Requirements** : opencv >= 2.4
+**Requirements**
+- opencv >= 2.4
+- (Linux) xdo >=3
 
 ### Linux
-We need OpenCV develompment library to compile and execute the program:
+We need OpenCV develompment library and XDoTool to compile and execute the program:
 ```
-sudo apt-get install libopencv-dev python-opencv
+sudo apt-get install libopencv-dev python-opencv libxdo-dev
 git clone https://github.com/MrMoDDoM/MuHi.git
 cd MuHi/
 ./compile.sh
-./muhi
+```
+
+**To compile the Writer test app**
+```
+cd src/Writer/
+./compile_writer.sh
+```
+
+...and now to lunch a progra, for example the **writer** use:
+```
+./MuHi & ./src/Writer/writer
 ```
 
 **At this moment the program uses only the first camer found (/dev/video0). You can swhitch camer with this (change X with the desire id):**
-```
+```https://daringfireball.net/projects/markdown/syntax
 sudo mv /dev/video0 /dev/videoTEMP
 sudo mv /dev/videoX /dev/video0
 sudo mv /dev/videoTEMP /dev/videoX
 ```
 ### Windows
-Just donwload & extract the zip file from [this link](http://www.muhack.org/muhi.zip) (we will upload soon the new complied version..!)
+Just donwload & extract the zip file from [this link](http://www.muhack.org/) (we will upload soon the new complied version..!)
 
 ### Basic usange
+With the version 1.0, MuHi is now a stand alone application intended to be the "caller" of other application.
+It sends keystroke based on eye status: the key is presed and released quikly, and not hold down.
+As example application, the "Writer" is now a stand alone application too. It behaves exactly like in the 0.5 version, with the difference that now you have to different thread running.
+
+This is how MuHi probably will interact with other application, and maybe with customizable key with different applications
+
 There are only few commands implemented so far:
-- ESC to esc the program
-- D to activate the debug system, usefull to understand what the application sees
-- +/- to increase or decrease the speed
-- A/S to increase or decrease the sensibility to trigger 
-- C/V to increase or decrease the eye detection area threshold
+- ESC to esc the program (it now closes only one thread)
+- ~~D to activate the debug system, usefull to understand what the application sees~~ Debug mode is active by default 
+- +/- to increase or decrease the speed of the Writer's selector
+- ~~A/S to increase or decrease the sensibility to trigger~~ not implemented yet in the v1.0!
+- ~~C/V to increase or decrease the eye detection area threshold~~ not implemented yet in the v1.0!
 
 The system uses the LEFT eye's blink to change the selector's direction, and the RIGHT eye's blink to make a "click"<br>
 To pause or resume the writing process "click" on the "PAUSA" button<br>
 To delete the last charater, use "CANC" and to empty the output use "INVIO"<br>
 
-**Tips & Tricks: stay in a well lighted room, with no makeup or object covering your face.** 
+**Tips & Tricks: stay in a well lighted room, with no makeup or object (hair or glasses) covering your face.** 
 
 ## To-Do
 - [x] Basic detection algorithm
 - [x] Code structure object-oriented
 - [ ] Documentations
 - [ ] Code refactoring
-- [ ] API or a system to let other application/system to interact with
+- [ ] API or a system to let other application/system to interact with (done in Linux)
 
+# Changelog 
+### v1.0 - public beta
+- MuHi is now a stand alone application: it now sends keystroke (0-1-2-3-4) to the focused window
+- Temporally removed Windows support
+- Added threshold auto-adjusting
+- Moved Writer as a stand alone application
+- Moved the cascade classifier to a separate folder
 
+### v0.5
+- Public beta
+- Added windows support
+- Bug fix
+- Speed improvment
+
+### v0.4
+- Added "YES/NO" button
+- Three different type of selector
+
+### v0.3
+- Project started
 
 # Contact
 ```
