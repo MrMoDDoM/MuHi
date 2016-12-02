@@ -53,9 +53,18 @@
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
+
+//Linux switch
+#ifdef __linux__
 extern "C"{
 	#include <xdo.h>
 }
+#endif
+
+#ifdef _WIN32
+#define WINVER 0x0500
+#include <windows.h>
+#endif
 
 //VARIABLES
 //xdo_t *xdo;

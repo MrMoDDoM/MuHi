@@ -49,12 +49,31 @@
 
 #include "OutputWorker.h"
 
+#ifdef __linux__
 xdo_t *xdo;
+#endif
+
+#ifdef _WIN32
+// This structure will be used to create the keyboard input event.
+INPUT ip;
+#endif
+
 
 //Setting up evn
 int initOutputWorker(){
-
+	//Init for linux
+	#ifdef __linux__
 	xdo = xdo_new(NULL);
+	#endif
+
+	//Init for win
+	#ifdef _WIN32
+	// Set up a generic keyboard event.
+	ip.type = INPUT_KEYBOARD;
+	ip.ki.wScan = 0; // hardware scan code for key
+	ip.ki.time = 0;
+	ip.ki.dwExtraInfo = 0;
+	#endif
 
 	return 0; //All went ok!
 }
@@ -62,7 +81,25 @@ int initOutputWorker(){
 
 int sendKeyboardKey(int blkSts){
 
-	////Need to remake something betteret thant std::to_string(blkSts,c_str()
+	#ifdef __linux__
+	////Need to remake something better than std::to_string(blkSts,c_str()
 	xdo_send_keysequence_window(xdo, CURRENTWINDOW, std::to_string(blkSts).c_str(), 0);
+	#endif
+
+	#ifdef _WIN32
+	// Press the key
+	ip.ki.wVk = 0x30 + blkSts; // virtual-key code for the "a" key
+	ip.ki.dwFlags = 0; // 0 for key press
+	SendInput(1, &ip, sizeof(INPUT));
+
+	// Release the key
+	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+	SendInput(1, &ip, sizeof(INPUT));
+	#endif
+
 	return 0; //Key send!
 }
+
+
+
+

@@ -50,6 +50,8 @@
 #ifndef MUHI_H_
 #define MUHI_H_
 
+#define VERSION 1.0
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>

@@ -107,28 +107,32 @@ int open_program( FILE *f, std::string path){
 
 int main( int argc, char** argv ){
 
-	if (argc > 4) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
-        	std::cout << "Usage is \"MuHi [-d] [-h] PROGRAM\"\n"; // Inform the user of how to use the program
+	if (argc > 50) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
+        	std::cout << "Usage is \"MuHi [-v|-d|-h|-s] PROGRAM\"\n"<<endl; // Inform the user of how to use the program
         	exit(0);
     	} else { // if we got enough parameters...
-        	char* myFile;
-        	std::cout << argv[0];
+        	char *program ;
+        	//std::cout << argv[0];
         	for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
                 	                          * Note that we're starting on 1 because we don't need to know the 
                         	                  * path of the program, which is stored in argv[0] */
-            		if (i + 1 != argc) // Check that we haven't finished parsing already
-                		if (argv[i] == "-f") {
-                    		// We know the next argument *should* be the filename:
-                    		myFile = argv[i + 1];
-                	} else if (argv[i] == "-d") {
-                    		debug = 1;
-                	} else if (argv[i] == "-h") {
-                    		cout<<"./MuHi [-d] program"<<endl;
-				exit(0);
-                	} else {
-                    		std::cout << "Not enough or invalid arguments, please try again.\n";
-                   		exit(0);
-            		}
+            		if (i + 1 > argc){ // Check that we haven't finished parsing already
+                		if (argv[i] == "-p") {
+                    			// We know the next argument *should* be the filename:
+                    			program = argv[i + 1];
+                		} else if (argv[i] == "-d") {
+                    			debug = true;
+                		} else if ( strcmp(argv[i], "-h") != 0) {
+                    			cout<<"./MuHi - Multi-Functional (/Hi)eye"<<endl;
+					cout<<"Usange: ./MuHi [-v|-d|-h|-s] PROGRAM"<<endl;
+					cout<<endl;
+					cout<<"\t -v: \tPrint this help and exit"<<endl;
+					exit(0);
+                		} else {
+                    			std::cout << "Not enough or invalid arguments, please try again.\n";
+                   			exit(0);
+            			}
+			}
 
            	 	std::cout << argv[i] << " ";
         	}
