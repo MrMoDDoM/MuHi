@@ -53,6 +53,7 @@
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
+#include "Settings.h"
 
 //Linux switch
 #ifdef __linux__
@@ -66,11 +67,8 @@ extern "C"{
 #include <windows.h>
 #endif
 
-//VARIABLES
-//xdo_t *xdo;
-
 //FUNCTIONS
-int initOutputWorker();
+int initOutputWorker(Settings *_set);
 int sendKeyboardKey(int blkSts);
 
 #endif //OUTPTWORKER_H_

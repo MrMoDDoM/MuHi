@@ -53,13 +53,12 @@
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
-//#include <opencv/cv.h>
-//#include <opencv/highgui.h>
 #include <opencv2/opencv.hpp>
+#include "Settings.h"
 
 using namespace cv;
 
-int initCamWorker();
+int initCamWorker(Settings *_set);
 int destroyCamWorker();
 bool getFrame(Mat *in);
 Rect detectFace(Mat *in);

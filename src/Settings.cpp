@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////
 
 //============================================================================
-// Name        : OutputWorker.cpp
+// Name        : Settings.cpp
 // Author      : MrMoDDoM
 // Version     : 1.0
 // Copyright   : GNU/GPL
@@ -47,69 +47,39 @@
 
 */
 
-#include "OutputWorker.h"
+#include "Settings.h"
 
-Settings *OWsetting;
-int old_status_sent = 0;
+void Settings::set_default(){
+	//MuHi.h
+	this->MAIN_WIN_TITLE = "MuHi";
+        this->X_RESOLUTION = 640;
+        this->Y_RESOLUTION = 480;
+	//MuHi.cpp
+	this->debug = false;
+	this->thres = 350;
+	this->blinkTresh = 10;
+	this->countSameStatus = 1;
+	//WebcamWorker.cpp
+	this->defaultCam = 0;
+	this->face_cascade_path = "cascade/lbpcascade_frontalface.xml";
+	this->eyes_left_cascade_path = "cascade/haarcascade_mcs_lefteye.xml";
+	this->eyes_right_cascade_path = "cascade/haarcascade_mcs_righteye.xml";
+	this->kEyePercentTop = 31;
+        this->kEyePercentSide = 15;
+        this->kEyePercentHeight = 23;
+        this->kEyePercentWidth = 30;
+	this->STABILITY_THRESHOLD = 5.0;
+	this->blinkThresh = 7; //MAYBE THIS IS NOT IMPORTANT - REDUNDANT VALUE! -->blinkTresh
+	this->eyeArrayDim = 6;
+	this->left_thresh = 80;
+	this->right_thresh = 80;
+	//OutputWorker.cpp
+	this->streamer = false;
 
-#ifdef __linux__
-xdo_t *xdo;
-#endif
 
-#ifdef _WIN32
-// This structure will be used to create the keyboard input event.
-INPUT ip;
-#endif
-
-//Setting up evn
-int initOutputWorker(Settings * _set){
-	//Copy the setting pointer
-	OWsetting = _set;
-
-	//Init for linux
-	#ifdef __linux__
-	xdo = xdo_new(NULL);
-	#endif
-	//Init for win
-	#ifdef _WIN32
-	// Set up a generic keyboard event.
-	ip.type = INPUT_KEYBOARD;
-	ip.ki.wScan = 0; // hardware scan code for key
-	ip.ki.time = 0;
-	ip.ki.dwExtraInfo = 0;
-	#endif
-
-	return 0; //All went ok!
 }
 
 
-int sendKeyboardKey(int blkSts){
-
-	//Here we check if we are streaming the eye status or just want to send it if change
-	if(!OWsetting->streamer && old_status_sent == blkSts)
-		return 1; //Key not sent, but it's ok because we are rejecting same status when we are streaming
-
-	#ifdef __linux__
-	////Need to remake something better than std::to_string(blkSts,c_str()
-	xdo_send_keysequence_window(xdo, CURRENTWINDOW, std::to_string(blkSts).c_str(), 0);
-	#endif
-
-	#ifdef _WIN32
-	// Press the key
-	ip.ki.wVk = 0x30 + blkSts; // virtual-key code for the "a" key
-	ip.ki.dwFlags = 0; // 0 for key press
-	SendInput(1, &ip, sizeof(INPUT));
-
-	// Release the key
-	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
-	SendInput(1, &ip, sizeof(INPUT));
-	#endif
-
-	old_status_sent = blkSts;
-
-	return 0; //Key send!
-}
-
-
-
-
+//char * Settings::get_name(){
+//	return name;
+//}

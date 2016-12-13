@@ -71,11 +71,9 @@ int Y_RESOLUTION = 480;
 //  VARIABLES
 ////////////////////////////////////
 Mat frame, HUD;
-bool blinkRigth, blinkLeft, noError, fin;
+bool blinkRigth, blinkLeft, fin;
 char key;
-int STEP_WAIT = 30;
-bool debug = false;
-FILE *program;
+FILE *program; //Maybe not usefull, but let's just leave that here...
 ////////////////////////////////////
 ////////////////////////////////////
 //  FUNCTIONS
@@ -83,6 +81,7 @@ FILE *program;
 int init();
 int exit();
 int open_program( FILE *f, std::string path);
+void print_logo();
 //int sendKeyboardKey(int blkSts);
 ////////////////////////////////////
 #endif /* MUHI_H_ */

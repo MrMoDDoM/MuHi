@@ -49,10 +49,9 @@
 
 #include "WebcamWorker.h"
 
+Settings *WWsetting;
+
 VideoCapture cam;
-String face_cascade_name = "cascade/lbpcascade_frontalface.xml";
-String eyes_left_cascade_name = "cascade/haarcascade_mcs_lefteye.xml";
-String eyes_right_cascade_name = "cascade/haarcascade_mcs_righteye.xml";
 CascadeClassifier face_cascade;
 CascadeClassifier eyes_cascade_left;
 CascadeClassifier eyes_cascade_right;
@@ -62,45 +61,60 @@ Rect face;
 Mat leftBackground;
 Mat rightBackground;
 
-const int kEyePercentTop = 31;
-const int kEyePercentSide = 15;
-const int kEyePercentHeight = 23;
-const int kEyePercentWidth = 30;
-
-const float STABILITY_THRESHOLD = 5.0;
-
 bool faceMoved = true;
 
 bool leftIsClosed, rightIsClosed;
+int *leftVarianzaArray, *rightVarianzaArray;
+int *leftShiftArray, *rightShiftArray;
 
-int blinkThresh = 7;
+//String face_cascade_name = "cascade/lbpcascade_frontalface.xml";
+//String eyes_left_cascade_name = "cascade/haarcascade_mcs_lefteye.xml";
+//String eyes_right_cascade_name = "cascade/haarcascade_mcs_righteye.xml";
+//const int kEyePercentTop = 31;
+//const int kEyePercentSide = 15;
+//const int kEyePercentHeight = 23;
+//const int kEyePercentWidth = 30;
+//const float STABILITY_THRESHOLD = 5.0;
+//int blinkThresh = 7;
+//const int eyeArrayDim = 6;
+//int leftVarianzaArray[WWsetting->eyeArrayDim], rightVarianzaArray[WWsetting->eyeArrayDim];
+//int leftShiftArray[WWsetting->eyeArrayDim], rightShiftArray[WWsetting->eyeArrayDim];
 
-const int eyeArrayDim = 6;
-int leftVarianzaArray[eyeArrayDim], rightVarianzaArray[eyeArrayDim];
-int leftShiftArray[eyeArrayDim], rightShiftArray[eyeArrayDim];
-
-int left_thresh = 80;
-int right_thresh = 80;
+//int left_thresh = 80;
+//int right_thresh = 80;
 
 bool first_time;
 
-int initCamWorker() {
+int initCamWorker(Settings *_set) {
 
-	first_time = true;
+	//Copy the setting pointer
+	WWsetting = _set;
+
+	first_time = true; //This is the first time we run the program
 
 	//Qui dovrò preoccuparmi di gestire le webcam...
-	cam.open(0);
+	cam.open(WWsetting->defaultCam);
 
+	//Try to open the webcam
 	if(!cam.isOpened()){
 		printf("No open webcam\n");
 		return -1;
 	}
 
-	if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading FACE CLASSIFIER\n"); return -1; };
-	if( !eyes_cascade_left.load( eyes_left_cascade_name ) ){ printf("--(!)Error loading LEFT EYE CLASSIFIER\n"); return -1; };
-	if( !eyes_cascade_right.load( eyes_right_cascade_name ) ){ printf("--(!)Error loading RIGHT EYE CLASSIFIER\n"); return -1; };
+	//Load the classifiers
+	if( !face_cascade.load( WWsetting->face_cascade_path ) ){ printf("--(!)Error loading FACE CLASSIFIER\n"); return -1; };
+	if( !eyes_cascade_left.load( WWsetting->eyes_left_cascade_path ) ){ printf("--(!)Error loading LEFT EYE CLASSIFIER\n"); return -1; };
+	if( !eyes_cascade_right.load( WWsetting->eyes_right_cascade_path ) ){ printf("--(!)Error loading RIGHT EYE CLASSIFIER\n"); return -1; };
 
-	for(int i = 0; i < eyeArrayDim; i++){
+	//Allocate and init the arrays
+	leftVarianzaArray = new int [WWsetting->eyeArrayDim];
+	rightVarianzaArray = new int [WWsetting->eyeArrayDim];
+	leftShiftArray = new int [WWsetting->eyeArrayDim];
+	rightShiftArray = new int [WWsetting->eyeArrayDim];
+
+
+
+	for(int i = 0; i < WWsetting->eyeArrayDim; i++){
 		leftVarianzaArray[i] = 0;
 		rightVarianzaArray[i] = 0;
 		leftShiftArray[i] = 0;
@@ -172,7 +186,7 @@ Rect detectCascade(Mat *in, CascadeClassifier *cc, Size _size){
 void checkStability(Rect *newer, Rect *old){
 	//Upper left corner
 	float diff = sqrt( pow( ( newer->x - old->x) ,2) + pow( (newer->y - old->y ) ,2) ) ;
-	if(diff > STABILITY_THRESHOLD){
+	if(diff > WWsetting->STABILITY_THRESHOLD){
 		//If the diff is higher than the treshold, we update 'face' to move toward the new result
 		old->x = (newer->x + old->x) / 2;
 		old->y = (newer->y + old->y) / 2;
@@ -183,7 +197,7 @@ void checkStability(Rect *newer, Rect *old){
 
 	//Bottom right corner (using h&w)
 	diff = sqrt( pow( ( (newer->x + newer->width) - (old->x + old->width)) ,2) + pow( ( (newer->y + newer->height) - (old->y + old->height) ) ,2) ) ;
-	if(diff > STABILITY_THRESHOLD){
+	if(diff > WWsetting->STABILITY_THRESHOLD){
 		old->width = ( old->width + newer->width) / 2;
 		old->height = ( old->height + newer->height) / 2;
 		//faceMoved = true;
@@ -258,19 +272,19 @@ float searchFront(Mat *in, int *arrVarianza, int *arrShift){
 	varianza = varianza / i;
 
 	//Push bach varianza value in the array
-	for(q = 0; q < eyeArrayDim - 1; q++){
+	for(q = 0; q < WWsetting->eyeArrayDim - 1; q++){
 		arrVarianza[q] = arrVarianza[q+1];
 		arrShift[q] = arrShift[q+1];
 	}
 
-	arrVarianza[eyeArrayDim - 1] = varianza;
+	arrVarianza[WWsetting->eyeArrayDim - 1] = varianza;
 
 	//Calc the delta shifting
-	float shift = (arrVarianza[eyeArrayDim - 1] - arrVarianza[0] ) / eyeArrayDim;
+	float shift = (arrVarianza[WWsetting->eyeArrayDim - 1] - arrVarianza[0] ) / WWsetting->eyeArrayDim;
 
 	//std::cout << std::fixed << std::setprecision(3) <<"SHIFT: "<< shift <<" -Media: "<< media << " -Varianza: "<< varianza << " -Max: "<< max <<std::endl;
 
-	arrShift[eyeArrayDim - 1] = shift;
+	arrShift[WWsetting->eyeArrayDim - 1] = shift;
 
 	free(array);
 
@@ -288,7 +302,7 @@ int findTheStatus(){
 
 	int leftCountClosing = 0, rightCountClosing = 0, leftCountOpening = 0, rightCountOpening = 0;
 
-	for(int i = 0; i < eyeArrayDim; i++){
+	for(int i = 0; i < WWsetting->eyeArrayDim; i++){
 
 		//Couting left
 		if(leftShiftArray[i] < -1)
@@ -309,15 +323,15 @@ int findTheStatus(){
 //	std::cout<< std::fixed << std::setprecision(5)<<"RCC: "<<rightCountClosing;
 //	std::cout<< std::fixed << std::setprecision(5)<<" -RCO: "<<rightCountOpening<<std::endl;
 
-	if(leftCountClosing > leftCountOpening + blinkThresh)
+	if(leftCountClosing > leftCountOpening + WWsetting->blinkThresh)
 		leftIsClosing = true;
-	else if (leftCountOpening < leftCountClosing + blinkThresh)
+	else if (leftCountOpening < leftCountClosing + WWsetting->blinkThresh)
 		leftIsOpening = true;
 
 
-	if(rightCountClosing > rightCountOpening + blinkThresh )
+	if(rightCountClosing > rightCountOpening + WWsetting->blinkThresh )
 		rightIsClosing = true;
-	else if (rightCountOpening < rightCountClosing + blinkThresh )
+	else if (rightCountOpening < rightCountClosing + WWsetting->blinkThresh )
 		rightIsOpening = true;
 
 
@@ -347,11 +361,13 @@ Mat frame_gray;
 
 Rect left_cand(0,0,0,0), right_cand(0,0,0,0);
 
+//PROBABLY THE _blinkThresh VALUE IS NOT IMPORTANT TO BE PASSED AS ARGUMENT BECAUSE WE ALREADY HAVE IT WITHIN SETTING!!!!
+//MUST REFACTOR!
 int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 
 	//calcHi(in);
 
-	blinkThresh = _blinkThresh;
+	WWsetting->blinkThresh = _blinkThresh;
 
 	Mat faceROI;
 	Mat leftEyeROI;
@@ -379,16 +395,16 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 		rectangle(*in, Point(face.x, face.y), Point(face.x + face.width, face.y + face.height), Scalar::all(255), 2, 1, 0);
 
 
-	int eye_region_width = face.width * (kEyePercentWidth/100.0);
-	int eye_region_height = face.width * (kEyePercentHeight/100.0);
-	int eye_region_top = face.height * (kEyePercentTop/100.0);
+	int eye_region_width = face.width * (WWsetting->kEyePercentWidth/100.0);
+	int eye_region_height = face.width * (WWsetting->kEyePercentHeight/100.0);
+	int eye_region_top = face.height * (WWsetting->kEyePercentTop/100.0);
 
 	//Now we have a Mat within the face
 	//faceROI = frame_gray( face );
 
 	//Extrapolate the most probabilistic area where the eyes should be
-	Rect leftEyeRegion = Rect(face.width*(kEyePercentSide/100.0), eye_region_top,eye_region_width,eye_region_height);
-	Rect rightEyeRegion = Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top,eye_region_width,eye_region_height);
+	Rect leftEyeRegion = Rect(face.width*(WWsetting->kEyePercentSide/100.0), eye_region_top,eye_region_width,eye_region_height);
+	Rect rightEyeRegion = Rect(face.width - eye_region_width - face.width*(WWsetting->kEyePercentSide/100.0), eye_region_top,eye_region_width,eye_region_height);
 
 	//Transpose the coordinates to the face starting position
 	leftEyeRegion.x += face.x;
@@ -485,16 +501,16 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 
 	if(!leftEyeROI.empty()){
 		Mat temp;
-		threshold( leftEyeROI, leftEyeROI, left_thresh, 255, 0 );
+		threshold( leftEyeROI, leftEyeROI, WWsetting->left_thresh, 255, 0 );
 		resize(leftEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1);
 		threshold( temp, temp, 70, 255, 0 );
 		//leftShift =
 		//Try to auto-adjust the threshold
 		if(countPixel(&temp) < _thresh)
-			left_thresh++;
+			WWsetting->left_thresh++;
 		else
-			left_thresh--;
+			WWsetting->left_thresh--;
 
 		searchFront(&temp, leftVarianzaArray, leftShiftArray);
 		if(_debug)
@@ -503,16 +519,16 @@ int detectBlink(Mat *in, int _blinkThresh, bool _debug, int _thresh){
 
 	if(!rightEyeROI.empty()){
 		Mat temp;
-		threshold( rightEyeROI, rightEyeROI, right_thresh, 255, 0 );
+		threshold( rightEyeROI, rightEyeROI, WWsetting->right_thresh, 255, 0 );
 		resize(rightEyeROI, temp, Size(), 2, 2, INTER_NEAREST);
 		GaussianBlur( temp, temp, Size(3, 3), 1, 1 );
 		threshold( temp, temp, 70, 255, 0 );
 		//rightShift =
 		//Try to auto-adjust the threshold
 		if(countPixel(&temp) < _thresh)
-			right_thresh++;
+			WWsetting->right_thresh++;
 		else
-			right_thresh--;
+			WWsetting->right_thresh--;
 
 		searchFront(&temp, rightVarianzaArray, rightShiftArray);
 		if(_debug)
