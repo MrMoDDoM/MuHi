@@ -53,7 +53,7 @@ Settings *OWsetting;
 int old_status_sent = 0;
 
 #ifdef __linux__
-xdo_t *xdo;
+xdo_t *xdo; //Xdo struct for serving virtual keystroke
 #endif
 
 #ifdef _WIN32
@@ -91,7 +91,8 @@ int sendKeyboardKey(int blkSts){
 
 	#ifdef __linux__
 	////Need to remake something better than std::to_string(blkSts,c_str()
-	xdo_send_keysequence_window(xdo, CURRENTWINDOW, std::to_string(blkSts).c_str(), 0);
+//	xdo_send_keysequence_window(xdo, CURRENTWINDOW, std::to_string(blkSts).c_str(), 0);
+	xdo_send_keysequence_window(xdo, CURRENTWINDOW, OWsetting->keyBinding.substr(blkSts,1).c_str(), 0); //Maybe we should check if the string is long enough
 	#endif
 
 	#ifdef _WIN32
@@ -105,7 +106,7 @@ int sendKeyboardKey(int blkSts){
 	SendInput(1, &ip, sizeof(INPUT));
 	#endif
 
-	old_status_sent = blkSts;
+	old_status_sent = blkSts; //Update the last status sent
 
 	return 0; //Key send!
 }

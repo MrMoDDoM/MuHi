@@ -75,8 +75,7 @@ void Settings::set_default(){
 	this->right_thresh = 80;
 	//OutputWorker.cpp
 	this->streamer = false;
-
-
+	this->keyBinding = "012345";
 }
 
 

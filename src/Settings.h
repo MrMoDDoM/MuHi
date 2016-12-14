@@ -56,6 +56,7 @@
 
 using namespace std;
 
+//Setting class: this class serves and holds all the important data and variables of MuHi system
 class Settings{
 
 	public:
@@ -65,7 +66,6 @@ class Settings{
 		int Y_RESOLUTION;
 		//MuHi.cpp
 		bool debug;
-		void set_default(); //Set default value
 		int thres;
 		int blinkTresh;
 		int countSameStatus;
@@ -85,7 +85,9 @@ class Settings{
 		int right_thresh; //Dinamic treshold, maybe is not important to place here in settings...
 		//OutputWorker.cpp
 		bool streamer;
-
+		string keyBinding;
+		//Functions
+		void set_default(); //Set default value
 //		char* get_name();
 };
 

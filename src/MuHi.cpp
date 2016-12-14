@@ -55,11 +55,6 @@
 Settings setting;
 
 int init(){
-	print_logo();
-
-	cout<<"Loading settings..."<<endl;
-	setting.set_default();
-
 	cout<<"Setting variables..."<<endl;
 	fin = false; //For exiting the main loop
 
@@ -260,44 +255,91 @@ unsigned char logo_muhi_sub[] = {
  cout<<logo_muhi_sub<<endl;
 }
 
+void print_usange(){
+	print_logo();
+	cout<<"The aim of this program is to provide an input system firstly based on eye's blinks."<<endl;
+	cout<<"Version: "<<VERSION<<endl;
+	cout<<"Usange: "<<endl;
+	cout<<"./MuHi [OPTIONS] path_to_program"<<endl;
+	cout<<"OPTIONS:"<<endl;
+	cout<<"\t -h \t\tPrint this help and exit"<<endl;
+	cout<<""<<endl;
+	cout<<"\t -d \t\tActivate the debug mode: in this mode the source frame and some information are displayed"<<endl;
+	cout<<""<<endl;
+	cout<<"\t -s \t\tActivate the streaimg mode: this way MuHi will continuosly output the status of eyes, and not only on change"<<endl;
+	cout<<""<<endl;
+	cout<<"\t -c NUM\t\tSelect the webcam index. 0 is normally the internal/default and 1 is the first USB cam connected."<<endl;
+	cout<<""<<endl;
+	cout<<"\t -k XXXXXX \t\tSIX and ONLY SIX charater to set as custom key sent on event. They stand for:"<<endl;
+	cout<<"\t\tFIRST: \t\tBoth eye are open"<<endl;
+	cout<<"\t\tSECOND: \tRigth eye is close, left is open"<<endl;
+	cout<<"\t\tTHIRD: \t\tRigth eye is open, left is close"<<endl;
+	cout<<"\t\tFOURTH: \tBoth eye are close"<<endl;
+	cout<<"\t\tFIFTH: \t\tTemporary error (e.g. face not found, wating frame, ecc)"<<endl;
+	cout<<"\t\tSIXTH: \t\tCritical error, shut everything down. "<<endl;
+	cout<<""<<endl;
+	cout<<""<<endl;
+	cout<<"EXAMPLE:"<<endl;
+	cout<<"./MuHi -c 1 -d [PATH/TO/]notepad.exe\tThis will use the webcam with index 1 and activate the debug mode,lunching notepad.exe to work with"<<endl;
+	cout<<"./MuHi -s -k asdfgh game.exe\t\tThis will set custom keys to \"asdfgh\", activate the streaming mode and lunch game.exe "<<endl;
+	cout<<""<<endl;
+	cout<<"For more info, visit www.muhack.org or write to danielebarattieri[at]gmail.com"<<endl;
+	cout<<""<<endl;
+	return;
+}
+
 int main( int argc, char** argv ){
 
+	cout<<"Loading settings..."<<endl;
+	setting.set_default();
+
 	//I FU***ING NEED A GOOD F***ING PARSER FOR F**ING PARSING THIS MOTHERF**KERS!
-	if (argc > 50) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
-        	std::cout << "Usage is \"MuHi [-v|-d|-h|-s] PROGRAM\"\n"<<endl; // Inform the user of how to use the program
+	if (argc == 1) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
+        	std::cout << "Usage is \"MuHi [-h|-d|-k|-c|-s] PROGRAM\"\n"<<endl; // Inform the user of how to use the program
         	exit(0);
     	} else { // if we got enough parameters...
         	char *program ;
-        	//std::cout << argv[0];
+		//cout<<"HERE 1 -- "<<argc<<endl;
         	for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
-                	                          * Note that we're starting on 1 because we don't need to know the 
+                	                          * Note that we're starting on 1 because we don't need to know the
                         	                  * path of the program, which is stored in argv[0] */
-            		if (i + 1 > argc){ // Check that we haven't finished parsing already
-                		if (argv[i] == "-p") {
-                    			// We know the next argument *should* be the filename:
-                    			program = argv[i + 1];
-                		} else if (argv[i] == "-d") {
-                    			setting.debug = true;
-                		} else if ( strcmp(argv[i], "-h") != 0) {
-                    			cout<<"./MuHi - Multi-Functional (/Hi)eye"<<endl;
-					cout<<"Usange: ./MuHi [-v|-d|-h|-s] PROGRAM"<<endl;
-					cout<<endl;
-					cout<<"\t -v: \tPrint this help and exit"<<endl;
-					exit(0);
-                		} else {
-                    			std::cout << "Not enough or invalid arguments, please try again.\n";
-                   			exit(0);
-            			}
-			}
-
-           	 	std::cout << argv[i] << " ";
+               		if (strcmp(argv[i],"-p") == 0) { //Set the target program
+               			program = argv[i + 1];
+				i++; //Shift foward the index to not get the filepath as invalid parameter
+                	} else if (strcmp(argv[i], "-d") == 0) { //Activate the debug mode
+                		setting.debug = true;
+				cout<<"Debug mode active!"<<endl;
+                	} else if (strcmp(argv[i], "-k") == 0) { //Set custom keyBinding
+                		setting.keyBinding = std::string (argv[i + 1]); //KEY MUST BE NOT LESS THAN 5! Maybe we should make some check...
+				cout<<"Custom keyBinding! MAKE ATTENTION!"<<endl;
+				i++;
+                	} else if ( strcmp(argv[i], "-h") == 0) { //Print the help and exit
+				print_usange();
+				exit(0);
+                	} else if ( strcmp(argv[i], "-c") == 0) { //Set the camera index -- maybe there is some bettere way :/
+				setting.defaultCam = atoi(argv[i + 1]);
+				i++; //Shift the index foward to skip the cam number
+                	} else if ( strcmp(argv[i], "-s") == 0) { //Activate the streaming mode
+				setting.streamer = true;
+				cout<<"Streamer mode active!"<<endl;
+                	} else if ( strcmp(argv[i], "-thequestion") == 0) { //Little easter egg ;P
+				cout<<"The Answer to the Ultimate Question of Life, the Universe, and Everything is 42"<<endl;
+				exit(0);
+			} else {
+                		std::cout << "Not enough or invalid arguments, please try again.\n";
+                		exit(0);
+            		}
         	}
     	}
+
+	//Print the logo and subtitle
+	print_logo();
 
 	//Some internal variables...
 	int old_status = 0, countingSameStatus = 0;
 	int blinkStatus = 0;
 
+	//Call the initializator function
 	if(init())
 		exitWithError("Error initializing the system! STOP!");
 
@@ -330,7 +372,6 @@ int main( int argc, char** argv ){
 		if(countingSameStatus >= setting.countSameStatus){
 			countingSameStatus = 0;
 			sendKeyboardKey(blinkStatus);
-
 		}
 
 		//Keyboard controls -- NEED TO REMAKE!!!
