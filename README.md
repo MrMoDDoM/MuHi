@@ -51,17 +51,11 @@ cd src/Writer/
 ./compile_writer.sh
 ```
 
-...and now to lunch a progra, for example the **writer** use:
+...and now to lunch a program, for example the **writer** use:
 ```
 ./MuHi & ./src/Writer/writer
 ```
 
-**At this moment the program uses only the first camer found (/dev/video0). You can swhitch camer with this (change X with the desire id):**
-```https://daringfireball.net/projects/markdown/syntax
-sudo mv /dev/video0 /dev/videoTEMP
-sudo mv /dev/videoX /dev/video0
-sudo mv /dev/videoTEMP /dev/videoX
-```
 ### Windows
 Just donwload & extract the zip file from [this link](http://www.muhack.org/) (we will upload soon the new complied version..!)
 
@@ -69,6 +63,20 @@ Just donwload & extract the zip file from [this link](http://www.muhack.org/) (w
 With the version 1.0, MuHi is now a stand alone application intended to be the "caller" of other application.
 It sends keystroke based on eye status: the key is presed and released quikly, and not hold down.
 As example application, the "Writer" is now a stand alone application too. It behaves exactly like in the 0.5 version, with the difference that now you have to different thread running.
+
+There also some command-line options:
+- -h             Print this help and exit
+- -d             Activate the debug mode: in this mode the source frame and some information are displayed
+- -s             Activate the streaimg mode: this way MuHi will continuosly output the status of eyes, and not only on change
+- -c NUM         Select the webcam index. 0 is normally the internal/default and 1 is the first USB cam connected.
+- -k XXXXXX      SIX and ONLY SIX charater to set as custom key sent on event. They stand for:
+--         FIRST:          Both eye are open
+--         SECOND:         Rigth eye is close, left is open
+--         THIRD:          Rigth eye is open, left is close
+--         FOURTH:         Both eye are close
+--         FIFTH:          Temporary error (e.g. face not found, wating frame, ecc)
+--         SIXTH:          Critical error, shut everything down.
+ 
 
 This is how MuHi probably will interact with other application, and maybe with customizable key with different applications
 
@@ -79,9 +87,11 @@ There are only few commands implemented so far:
 - ~~A/S to increase or decrease the sensibility to trigger~~ not implemented yet in the v1.0!
 - ~~C/V to increase or decrease the eye detection area threshold~~ not implemented yet in the v1.0!
 
+### Writer test app
 The system uses the LEFT eye's blink to change the selector's direction, and the RIGHT eye's blink to make a "click"<br>
 To pause or resume the writing process "click" on the "PAUSA" button<br>
 To delete the last charater, use "CANC" and to empty the output use "INVIO"<br>
+
 
 **Tips & Tricks: stay in a well lighted room, with no makeup or object (hair or glasses) covering your face.** 
 
@@ -93,6 +103,7 @@ To delete the last charater, use "CANC" and to empty the output use "INVIO"<br>
 - [ ] API or a system to let other application/system to interact with (done in Linux)
 
 # Changelog 
+
 ### v1.0 - public beta
 - MuHi is now a stand alone application: it now sends keystroke (0-1-2-3-4) to the focused window
 - Temporally removed Windows support
