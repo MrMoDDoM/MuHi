@@ -271,20 +271,20 @@ float searchFront(Mat *in, int *arrVarianza, int *arrShift){
 
 	varianza = varianza / i;
 
-	//Push bach varianza value in the array
+	//Push bach varianza and shift values in the arrays
 	for(q = 0; q < WWsetting->eyeArrayDim - 1; q++){
 		arrVarianza[q] = arrVarianza[q+1];
 		arrShift[q] = arrShift[q+1];
 	}
 
-	arrVarianza[WWsetting->eyeArrayDim - 1] = varianza;
+	arrVarianza[WWsetting->eyeArrayDim - 1] = varianza; //Append last varianza
 
 	//Calc the delta shifting
 	float shift = (arrVarianza[WWsetting->eyeArrayDim - 1] - arrVarianza[0] ) / WWsetting->eyeArrayDim;
 
-	//std::cout << std::fixed << std::setprecision(3) <<"SHIFT: "<< shift <<" -Media: "<< media << " -Varianza: "<< varianza << " -Max: "<< max <<std::endl;
+//	std::cout << std::fixed  <<"SHIFT: "<< shift <<" -Media: "<< media << " -Varianza: "<< varianza << " -Max: "<< max <<std::endl;
 
-	arrShift[WWsetting->eyeArrayDim - 1] = shift;
+	arrShift[WWsetting->eyeArrayDim - 1] = shift; //Append last shift
 
 	free(array);
 
@@ -308,7 +308,7 @@ int findTheStatus(){
 		if(leftShiftArray[i] < -1)
 			leftCountClosing += abs(leftShiftArray[i]);
 		if(leftShiftArray[i] > 1)
-			leftCountOpening += abs(rightShiftArray[i]);
+			leftCountOpening += abs(leftShiftArray[i]);
 
 		//Countig right
 		if(rightShiftArray[i] < -1)
@@ -323,17 +323,18 @@ int findTheStatus(){
 //	std::cout<< std::fixed << std::setprecision(5)<<"RCC: "<<rightCountClosing;
 //	std::cout<< std::fixed << std::setprecision(5)<<" -RCO: "<<rightCountOpening<<std::endl;
 
-	if(leftCountClosing > leftCountOpening + WWsetting->blinkThresh)
+	if(leftCountClosing > leftCountOpening + WWsetting->blinkThresh){
 		leftIsClosing = true;
-	else if (leftCountOpening < leftCountClosing + WWsetting->blinkThresh)
+	}
+	else if (leftCountOpening > leftCountClosing + WWsetting->blinkThresh){
 		leftIsOpening = true;
+	}
 
-
-	if(rightCountClosing > rightCountOpening + WWsetting->blinkThresh )
+	if(rightCountClosing > rightCountOpening + WWsetting->blinkThresh ){
 		rightIsClosing = true;
-	else if (rightCountOpening < rightCountClosing + WWsetting->blinkThresh )
+	} else if (rightCountOpening > rightCountClosing + WWsetting->blinkThresh ){
 		rightIsOpening = true;
-
+	}
 
 	if(rightIsClosing && !rightIsClosed && !rightIsOpening)
 		rightIsClosed = true;

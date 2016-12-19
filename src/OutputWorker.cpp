@@ -95,9 +95,14 @@ int sendKeyboardKey(int blkSts){
 	xdo_send_keysequence_window(xdo, CURRENTWINDOW, OWsetting->keyBinding.substr(blkSts,1).c_str(), 0); //Maybe we should check if the string is long enough
 	#endif
 
+
+	//F**CK WINDOWS! WHY THIS VIRTUALKEY STUFF NEEDS TO BE SO F***CKIN COMPLICATED?!?!?!?!?
+	//LOOK AT THIS MESS! COM'ON! R U KIDDING ME?!
 	#ifdef _WIN32
 	// Press the key
-	ip.ki.wVk = 0x30 + blkSts; // virtual-key code for the "a" key
+	char *key = OWsetting->keyBinding.data();
+	//ip.ki.wVk = 0x30 + blkSts; // virtual-key code
+	ip.ki.wVk = hex<<(int)key[blkSts]; // virtual-key code
 	ip.ki.dwFlags = 0; // 0 for key press
 	SendInput(1, &ip, sizeof(INPUT));
 
@@ -110,7 +115,3 @@ int sendKeyboardKey(int blkSts){
 
 	return 0; //Key send!
 }
-
-
-
-
