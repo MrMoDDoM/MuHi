@@ -100,9 +100,9 @@ int sendKeyboardKey(int blkSts){
 	//LOOK AT THIS MESS! COM'ON! R U KIDDING ME?!
 	#ifdef _WIN32
 	// Press the key
-	char *key = OWsetting->keyBinding.data();
-	//ip.ki.wVk = 0x30 + blkSts; // virtual-key code
-	ip.ki.wVk = hex<<(int)key[blkSts]; // virtual-key code
+	//char *key = OWsetting->keyBinding.data();
+	ip.ki.wVk = 0x30 + blkSts; // virtual-key code - 0x30 is the '0' (zero) char, then we add the blkSts to get the right key-code
+	//ip.ki.wVk = hex<<(int)key[blkSts]; // virtual-key code
 	ip.ki.dwFlags = 0; // 0 for key press
 	SendInput(1, &ip, sizeof(INPUT));
 
