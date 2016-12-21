@@ -76,6 +76,8 @@ void Settings::set_default(){
 	//OutputWorker.cpp
 	this->streamer = false;
 	this->keyBinding = "012345";
+	this->longPress = false;
+	this->onlyClosedStates = false;
 }
 
 

@@ -48,6 +48,7 @@
 */
 
 #include "WebcamWorker.h"
+#include <iomanip>
 
 Settings *WWsetting;
 
@@ -111,8 +112,6 @@ int initCamWorker(Settings *_set) {
 	rightVarianzaArray = new int [WWsetting->eyeArrayDim];
 	leftShiftArray = new int [WWsetting->eyeArrayDim];
 	rightShiftArray = new int [WWsetting->eyeArrayDim];
-
-
 
 	for(int i = 0; i < WWsetting->eyeArrayDim; i++){
 		leftVarianzaArray[i] = 0;
@@ -319,7 +318,6 @@ int findTheStatus(){
 
 //	std::cout<< std::fixed << std::setprecision(5)<<"LCC: "<<leftCountClosing;
 //	std::cout<< std::fixed << std::setprecision(5)<<" -LCO: "<<leftCountOpening<<std::endl;
-//
 //	std::cout<< std::fixed << std::setprecision(5)<<"RCC: "<<rightCountClosing;
 //	std::cout<< std::fixed << std::setprecision(5)<<" -RCO: "<<rightCountOpening<<std::endl;
 

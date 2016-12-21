@@ -86,6 +86,8 @@ class Settings{
 		//OutputWorker.cpp
 		bool streamer;
 		string keyBinding;
+		bool longPress;
+		bool onlyClosedStates;
 		//Functions
 		void set_default(); //Set default value
 //		char* get_name();

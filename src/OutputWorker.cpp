@@ -49,8 +49,10 @@
 
 #include "OutputWorker.h"
 
+//Local variables
 Settings *OWsetting;
 int old_status_sent = 0;
+bool somethingIsPressed = false;
 
 #ifdef __linux__
 xdo_t *xdo; //Xdo struct for serving virtual keystroke
@@ -82,19 +84,13 @@ int initOutputWorker(Settings * _set){
 	return 0; //All went ok!
 }
 
-
-int sendKeyboardKey(int blkSts){
-
-	//Here we check if we are streaming the eye status or just want to send it if change
-	if(!OWsetting->streamer && old_status_sent == blkSts)
-		return 1; //Key not sent, but it's ok because we are rejecting same status when we are streaming
-
+void pressKey(int blkSts){
 	#ifdef __linux__
 	////Need to remake something better than std::to_string(blkSts,c_str()
 //	xdo_send_keysequence_window(xdo, CURRENTWINDOW, std::to_string(blkSts).c_str(), 0);
-	xdo_send_keysequence_window(xdo, CURRENTWINDOW, OWsetting->keyBinding.substr(blkSts,1).c_str(), 0); //Maybe we should check if the string is long enough
+//	xdo_send_keysequence_window(xdo, CURRENTWINDOW, OWsetting->keyBinding.substr(blkSts,1).c_str(), 0); //Maybe we should check if the string is long enough
+	xdo_send_keysequence_window_down(xdo, CURRENTWINDOW, OWsetting->keyBinding.substr(blkSts,1).c_str(), 0); //Maybe we should check if the string is long enough
 	#endif
-
 
 	//F**CK WINDOWS! WHY THIS VIRTUALKEY STUFF NEEDS TO BE SO F***CKIN COMPLICATED?!?!?!?!?
 	//LOOK AT THIS MESS! COM'ON! R U KIDDING ME?!
@@ -105,13 +101,78 @@ int sendKeyboardKey(int blkSts){
 	//ip.ki.wVk = hex<<(int)key[blkSts]; // virtual-key code
 	ip.ki.dwFlags = 0; // 0 for key press
 	SendInput(1, &ip, sizeof(INPUT));
+	#endif
 
+	somethingIsPressed = true;
+}
+
+void releaseKey(int blkSts){
+	#ifdef __linux__
+	////Need to remake something better than std::to_string(blkSts,c_str()
+//	xdo_send_keysequence_window(xdo, CURRENTWINDOW, std::to_string(blkSts).c_str(), 0);
+//	xdo_send_keysequence_window(xdo, CURRENTWINDOW, OWsetting->keyBinding.substr(blkSts,1).c_str(), 0); //Maybe we should check if the string is long enough
+	xdo_send_keysequence_window_up(xdo, CURRENTWINDOW, OWsetting->keyBinding.substr(blkSts,1).c_str(), 0); //Maybe we should check if the string is long enough
+	#endif
+
+	//F**CK WINDOWS! WHY THIS VIRTUALKEY STUFF NEEDS TO BE SO F***CKIN COMPLICATED?!?!?!?!?
+	//LOOK AT THIS MESS! COM'ON! R U KIDDING ME?!
+	#ifdef _WIN32
+	// Press the key
+	//char *key = OWsetting->keyBinding.data();
+	ip.ki.wVk = 0x30 + blkSts; // virtual-key code - 0x30 is the '0' (zero) char, then we add the blkSts to get the right key-code
+	//ip.ki.wVk = hex<<(int)key[blkSts]; // virtual-key code
 	// Release the key
 	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
 	SendInput(1, &ip, sizeof(INPUT));
 	#endif
 
-	old_status_sent = blkSts; //Update the last status sent
+	somethingIsPressed = false;
 
-	return 0; //Key send!
+}
+
+
+int sendKeyboardKey(int blkSts){
+
+	if(!OWsetting->streamer){ //If we are not streaming the key
+		if(old_status_sent != blkSts){ //Only if the status has changed we can continue
+			if(somethingIsPressed){
+				releaseKey(old_status_sent); //First of all we release the key if is still pressed
+			}
+
+			if(OWsetting->onlyClosedStates){ //If we want only the imporant state
+				if(blkSts == 1 || blkSts == 2 || blkSts == 3){ //Only the important state
+					if(OWsetting->longPress){ //If we want that the key still down until the eye is open
+						pressKey(blkSts);
+					} else { //If we want only a short dash, a "click" of the key
+						pressKey(blkSts);
+						releaseKey(blkSts);
+					}
+				}
+			} else { //If we want all the status
+				if(OWsetting->longPress){ //If we want that the key still down until the eye is open
+					pressKey(blkSts);
+				} else { //If we want only a short dash, a "click" of the key
+					pressKey(blkSts);
+					releaseKey(blkSts);
+				}
+			}
+		}
+	} else {
+		if(OWsetting->onlyClosedStates){ //If we want only the imporant state
+			if(blkSts == 1 || blkSts == 2 || blkSts == 3){ //Only the important state
+				//Press & release
+				pressKey(blkSts);
+				releaseKey(blkSts);
+			}
+		} else { //If we don't want importante state, press and release everything..!
+			//Press & release
+			pressKey(blkSts);
+			releaseKey(blkSts);
+		}
+	}
+
+	//If the user wants only the closed state (1->Right closed | 2->Left closed | 3->Both closed) and the blkSts is not one of these
+	old_status_sent = blkSts; //When everything is done, we update the old_status
+
+	return 0; //Key sent!
 }

@@ -264,6 +264,10 @@ void print_usange(){
 	cout<<"OPTIONS:"<<endl;
 	cout<<"\t -h \t\tPrint this help and exit"<<endl;
 	cout<<""<<endl;
+	cout<<"\t -i \t\tSend only eye's close state: the system will react only when only one or both eye are close"<<endl;
+	cout<<""<<endl;
+	cout<<"\t -l \t\tLong press the key: the virtual keystroke is released only on change"<<endl;
+	cout<<""<<endl;
 	cout<<"\t -d \t\tActivate the debug mode: in this mode the source frame and some information are displayed"<<endl;
 	cout<<""<<endl;
 	cout<<"\t -s \t\tActivate the streaimg mode: this way MuHi will continuosly output the status of eyes, and not only on change"<<endl;
@@ -309,7 +313,13 @@ int main( int argc, char** argv ){
                 	} else if (strcmp(argv[i], "-d") == 0) { //Activate the debug mode
                 		setting.debug = true;
 				cout<<"Debug mode active!"<<endl;
-                	} else if (strcmp(argv[i], "-k") == 0) { //Set custom keyBinding
+                	} else if (strcmp(argv[i], "-i") == 0) { //Activate the debug mode
+                		setting.onlyClosedStates = true;
+				cout<<"Selecting only closed state!"<<endl;
+                        } else if (strcmp(argv[i], "-l") == 0) { //Activate the debug mode
+                		setting.longPress = true;
+				cout<<"Long-press mode active!"<<endl;
+		     	} else if (strcmp(argv[i], "-k") == 0) { //Set custom keyBinding
                 		setting.keyBinding = std::string (argv[i + 1]); //KEY MUST BE NOT LESS THAN 5! Maybe we should make some check...
 				cout<<"Custom keyBinding! MAKE ATTENTION!"<<endl;
 				i++;
