@@ -59,6 +59,7 @@ void Settings::set_default(){
 	this->thres = 350;
 	this->blinkTresh = 10;
 	this->countSameStatus = 1;
+	this->noLogo = false;
 	//WebcamWorker.cpp
 	this->defaultCam = 0;
 	this->face_cascade_path = "cascade/lbpcascade_frontalface.xml";

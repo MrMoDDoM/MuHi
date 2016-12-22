@@ -69,6 +69,7 @@ class Settings{
 		int thres;
 		int blinkTresh;
 		int countSameStatus;
+		bool noLogo;
 		//WebcamWorker.cpp
 		int defaultCam;
 		string face_cascade_path;
@@ -88,6 +89,8 @@ class Settings{
 		string keyBinding;
 		bool longPress;
 		bool onlyClosedStates;
+		//ProcessWorker.cpp
+		string pathToTargetProgram;
 		//Functions
 		void set_default(); //Set default value
 //		char* get_name();

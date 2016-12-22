@@ -20,9 +20,9 @@
 ////////////////////////////////////////////////////////////////
 
 //============================================================================
-// Name        : MuHi.cpp
+// Name        : ProcessWorker.h
 // Author      : MrMoDDoM
-// Version     : 0.5
+// Version     : 1.1
 // Copyright   : GNU/GPL
 // Description : MuHi in C++, Ansi-style
 //============================================================================
@@ -47,41 +47,77 @@
 
 */
 
-#ifndef MUHI_H_
-#define MUHI_H_
-
-#define VERSION 1.1
-
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <exception>
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
-
-using namespace cv;
-using namespace std;
+#include "ProcessWorker.h"
 
 //GLOBAL
-//static const char *MAIN_WIN_TITLE = "MuHi";
-//int X_RESOLUTION = 640;
-//int Y_RESOLUTION = 480;
 
 ////////////////////////////////////
 //  VARIABLES
 ////////////////////////////////////
-Mat frame, HUD;
-bool blinkRigth, blinkLeft, fin;
-char key;
-FILE *program; //Maybe not usefull, but let's just leave that here...
+Settings *PWsetting;
 ////////////////////////////////////
-////////////////////////////////////
-//  FUNCTIONS
-////////////////////////////////////
-int init();
-int exit();
-int open_program( FILE *f, std::string path);
-void print_logo();
-//int sendKeyboardKey(int blkSts);
-////////////////////////////////////
-#endif /* MUHI_H_ */
+//This function lunch the external program and return 0 on success
+int initProcessWorker(Settings * _set){
+	//Copy settings pointer
+	PWsetting = _set;
+
+	#ifdef __linux__
+	//Need to use fork()-exec() to run process
+
+	#endif
+
+	//Guess what?... CODING FOR WINDOWS IS F***CKING IMPOSSIBLE!!!
+	#ifdef _WIN32
+	ZeroMemory( &si, sizeof(si) );
+	si.cb = sizeof(si);
+	ZeroMemory( &pi, sizeof(pi) );
+
+	//Yes...YES! This part is copied from Microsoft examples...!
+	// Start the child process.
+	if( !CreateProcess( NULL,   // No module name (use command line)
+		PWsetting->pathToTargetProgram, // Command line
+		NULL,           // Process handle not inheritable
+		NULL,           // Thread handle not inheritable
+		FALSE,          // Set handle inheritance to FALSE
+		0,              // No creation flags
+		NULL,           // Use parent's environment block
+		NULL,           // Use parent's starting directory
+		&si,            // Pointer to STARTUPINFO structure
+		&pi )           // Pointer to PROCESS_INFORMATION structure
+	){
+		//printf( "CreateProcess failed (%d).\n", GetLastError() );
+		return 1;
+	}
+
+	#endif
+
+
+	cout<<"Lunching "<<PWsetting->pathToTargetProgram<<endl;
+	return 0; //All went ok!
+}
+
+//This function return 0 if the target program is still running, 1 if not
+int targetIsStillRunning(){
+
+	#ifdef __linux__
+	//Need to use kill(pid,0) to find if process had exited
+
+	#endif
+
+	#ifdef _WIN32
+	DWORD exitCode = 0;
+	if (GetExitCodeProcess(pi.hProcess, &exitCode) == FALSE){
+		// Handle GetExitCodeProcess failure - something went wrong...
+		return -1;
+	}
+
+	if (exitCode != STILL_ACTIVE){
+		return 1; //The target program has stopped!
+	}
+
+	#endif
+
+	return 0; //Ok, the target is still running
+}
+
+

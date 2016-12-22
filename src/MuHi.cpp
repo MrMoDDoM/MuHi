@@ -38,7 +38,7 @@
 
     Foobar is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+B    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -50,6 +50,7 @@
 #include "MuHi.h"
 #include "WebcamWorker.h"
 #include "OutputWorker.h"
+#include "ProcessWorker.h"
 #include "Settings.h"
 
 Settings setting;
@@ -68,6 +69,10 @@ int init(){
 	if(initOutputWorker(&setting))
 		return -1;
 
+	//Init the Process worker to handle and lunch the target program
+	cout<<"Starting target program..."<<endl;
+	if(initProcessWorker(&setting))
+		return -1;
 
 	//All went ok!
 	cout<<"All ok! Let's go!"<<endl;
@@ -260,9 +265,13 @@ void print_usange(){
 	cout<<"The aim of this program is to provide an input system firstly based on eye's blinks."<<endl;
 	cout<<"Version: "<<VERSION<<endl;
 	cout<<"Usange: "<<endl;
-	cout<<"./MuHi [OPTIONS] path_to_program"<<endl;
+	cout<<"./MuHi [OPTIONS] -p path_to_program"<<endl;
 	cout<<"OPTIONS:"<<endl;
-	cout<<"\t -h \t\tPrint this help and exit"<<endl;
+	cout<<"\t -p PATH_TO_PROGRAM\t\t The path to the target program: the system will lunch and attach to it"<<endl;
+	cout<<""<<endl;
+	cout<<"\t -nologo \t\tLunch the system without printing the logo"<<endl;
+	cout<<""<<endl;
+	cout<<"\t -p \t\tPrint this help and exit"<<endl;
 	cout<<""<<endl;
 	cout<<"\t -i \t\tSend only eye's close state: the system will react only when only one or both eye are close"<<endl;
 	cout<<""<<endl;
@@ -296,19 +305,19 @@ int main( int argc, char** argv ){
 
 	cout<<"Loading settings..."<<endl;
 	setting.set_default();
+        char *program ;
 
 	//I FU***ING NEED A GOOD F***ING PARSER FOR F**ING PARSING THIS MOTHERF**KERS!
 	if (argc == 1) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
-        	std::cout << "Usage is \"MuHi [-h|-d|-k|-c|-s] PROGRAM\"\n"<<endl; // Inform the user of how to use the program
+        	std::cout << "Usage is \"MuHi [-h|-d|-k|-c|-s] -p PROGRAM\"\n"<<endl; // Inform the user of how to use the program
         	exit(0);
     	} else { // if we got enough parameters...
-        	char *program ;
 		//cout<<"HERE 1 -- "<<argc<<endl;
         	for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
                 	                          * Note that we're starting on 1 because we don't need to know the
                         	                  * path of the program, which is stored in argv[0] */
                		if (strcmp(argv[i],"-p") == 0) { //Set the target program
-               			program = argv[i + 1];
+               			setting.pathToTargetProgram = argv[i + 1]; //Implicit convertion from char* to string (but no warning, cool... )
 				i++; //Shift foward the index to not get the filepath as invalid parameter
                 	} else if (strcmp(argv[i], "-d") == 0) { //Activate the debug mode
                 		setting.debug = true;
@@ -326,6 +335,8 @@ int main( int argc, char** argv ){
                 	} else if ( strcmp(argv[i], "-h") == 0) { //Print the help and exit
 				print_usange();
 				exit(0);
+                	} else if ( strcmp(argv[i], "-nologo") == 0) { //Disable logo printing
+				setting.noLogo = true;
                 	} else if ( strcmp(argv[i], "-c") == 0) { //Set the camera index -- maybe there is some bettere way :/
 				setting.defaultCam = atoi(argv[i + 1]);
 				i++; //Shift the index foward to skip the cam number
@@ -342,8 +353,10 @@ int main( int argc, char** argv ){
         	}
     	}
 
+
 	//Print the logo and subtitle
-	print_logo();
+	if(!setting.noLogo)
+		print_logo();
 
 	//Some internal variables...
 	int old_status = 0, countingSameStatus = 0;
@@ -352,6 +365,9 @@ int main( int argc, char** argv ){
 	//Call the initializator function
 	if(init())
 		exitWithError("Error initializing the system! STOP!");
+
+	//just for testing
+	return 0;
 
 	//MAIN LOOP
 	while(!fin){
@@ -376,6 +392,11 @@ int main( int argc, char** argv ){
 		} else {
 			old_status = blinkStatus;
 			countingSameStatus = 0;
+		}
+
+		//Check if the target program is still running. If not, the system il alted
+		if(!targetIsStillRunning()){
+			exitWithError("The target program has stopped. You don't need me anymore...! ;)");
 		}
 
 		//Send to the OutPutWorker the eye's status only if the same status is repeted for countSameStatus's times

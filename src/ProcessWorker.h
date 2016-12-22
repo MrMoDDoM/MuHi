@@ -20,9 +20,9 @@
 ////////////////////////////////////////////////////////////////
 
 //============================================================================
-// Name        : MuHi.cpp
+// Name        : ProcessWorker.h
 // Author      : MrMoDDoM
-// Version     : 0.5
+// Version     : 1.1
 // Copyright   : GNU/GPL
 // Description : MuHi in C++, Ansi-style
 //============================================================================
@@ -47,41 +47,41 @@
 
 */
 
-#ifndef MUHI_H_
-#define MUHI_H_
+#ifndef PROCESSWORKER_H_
+#define PROCESSWORKER_H_
 
 #define VERSION 1.1
 
-#include <iostream>
+/*#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <exception>
-#include <opencv2/core/core.hpp>
-#include <opencv2/opencv.hpp>
+#include <exception>*/
 
-using namespace cv;
-using namespace std;
+#include "Settings.h"
 
+//Linux switch
+#ifdef __linux__
+#endif
+
+#ifdef _WIN32
+#define WINVER 0x0500
+#include <windows.h>
+
+STARTUPINFO si;
+PROCESS_INFORMATION pi;
+
+#endif
 //GLOBAL
-//static const char *MAIN_WIN_TITLE = "MuHi";
-//int X_RESOLUTION = 640;
-//int Y_RESOLUTION = 480;
 
 ////////////////////////////////////
 //  VARIABLES
 ////////////////////////////////////
-Mat frame, HUD;
-bool blinkRigth, blinkLeft, fin;
-char key;
-FILE *program; //Maybe not usefull, but let's just leave that here...
+
 ////////////////////////////////////
 ////////////////////////////////////
 //  FUNCTIONS
 ////////////////////////////////////
-int init();
-int exit();
-int open_program( FILE *f, std::string path);
-void print_logo();
-//int sendKeyboardKey(int blkSts);
+int initProcessWorker(Settings * _set);
+int targetIsStillRunning();
 ////////////////////////////////////
-#endif /* MUHI_H_ */
+#endif /* PROCESSWORKER_H_ */
