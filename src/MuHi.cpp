@@ -366,9 +366,6 @@ int main( int argc, char** argv ){
 	if(init())
 		exitWithError("Error initializing the system! STOP!");
 
-	//just for testing
-	return 0;
-
 	//MAIN LOOP
 	while(!fin){
 		//For this probably is better use an enum...
@@ -395,7 +392,7 @@ int main( int argc, char** argv ){
 		}
 
 		//Check if the target program is still running. If not, the system il alted
-		if(!targetIsStillRunning()){
+		if(targetIsStillRunning()){
 			exitWithError("The target program has stopped. You don't need me anymore...! ;)");
 		}
 

@@ -55,6 +55,16 @@
 //  VARIABLES
 ////////////////////////////////////
 Settings *PWsetting;
+
+#ifdef __linux__
+pid_t childPid;
+#endif
+
+#ifdef _WIN32
+STARTUPINFO si;
+PROCESS_INFORMATION pi;
+#endif
+
 ////////////////////////////////////
 //This function lunch the external program and return 0 on success
 int initProcessWorker(Settings * _set){
@@ -63,6 +73,21 @@ int initProcessWorker(Settings * _set){
 
 	#ifdef __linux__
 	//Need to use fork()-exec() to run process
+
+	switch ((childPid = fork())){
+		case -1: //Forking has failed!
+			return 1;
+		break;
+
+		case 0:  //We are in the child process!
+			execv (PWsetting->pathToTargetProgram.data(), NULL);
+			return -1; //If we hit this return, the execv has failed!
+		break;
+
+		default: //We are in the parent process: now childPid refers to the child process..!
+			cout<<"Correctly forked new process..."<<endl;
+		break;
+	}
 
 	#endif
 
@@ -91,17 +116,20 @@ int initProcessWorker(Settings * _set){
 
 	#endif
 
-
 	cout<<"Lunching "<<PWsetting->pathToTargetProgram<<endl;
 	return 0; //All went ok!
 }
 
-//This function return 0 if the target program is still running, 1 if not
+//This function return 0 if the target program is still running, "not 0" if not
 int targetIsStillRunning(){
 
 	#ifdef __linux__
-	//Need to use kill(pid,0) to find if process had exited
-
+	int status;
+	//COOL! We can return directly the value from waitpid because we are using WNOHANG and so it returns:
+	// 0 if the proces specified with childPid is still running
+	// !0 if all the child process as terminated..! :D
+	//THANKS LINUX!
+	return waitpid(childPid, &status, WNOHANG);
 	#endif
 
 	#ifdef _WIN32

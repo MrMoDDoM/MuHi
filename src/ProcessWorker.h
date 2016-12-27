@@ -61,23 +61,16 @@
 
 //Linux switch
 #ifdef __linux__
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #endif
 
 #ifdef _WIN32
 #define WINVER 0x0500
 #include <windows.h>
-
-STARTUPINFO si;
-PROCESS_INFORMATION pi;
-
 #endif
-//GLOBAL
 
-////////////////////////////////////
-//  VARIABLES
-////////////////////////////////////
-
-////////////////////////////////////
 ////////////////////////////////////
 //  FUNCTIONS
 ////////////////////////////////////
