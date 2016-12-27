@@ -101,7 +101,7 @@ int initProcessWorker(Settings * _set){
 	// Start the child process.
 	string pathToProgram = PWsetting->pathToTargetProgram.data();
 	if( !CreateProcessA( NULL,   // No module name (use command line)
-		(LPSTR) pathToProgram, // Command line
+		(LPSTR) pathToProgram.data(), // Command line
 		NULL,           // Process handle not inheritable
 		NULL,           // Thread handle not inheritable
 		FALSE,          // Set handle inheritance to FALSE
