@@ -99,7 +99,7 @@ int initProcessWorker(Settings * _set){
 
 	//Yes...YES! This part is copied from Microsoft examples...!
 	// Start the child process.
-	char *pathToProgram = PWsetting->pathToTargetProgram.data();
+	char pathToProgram = PWsetting->pathToTargetProgram.data();
 	if( !CreateProcessA( NULL,   // No module name (use command line)
 		pathToProgram, // Command line
 		NULL,           // Process handle not inheritable
