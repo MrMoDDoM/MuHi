@@ -53,11 +53,11 @@ cd src/Writer/
 
 ...and now to lunch a program, for example the **writer** use:
 ```
-./MuHi & ./src/Writer/writer
+./MuHi -p ./src/Writer/writer
 ```
 
 ### Windows
-Just donwload & extract the zip file from [this link](http://www.muhack.org/) (we will upload soon the new complied version..!)
+Just donwload & extract the zip file from [this link](https://github.com/MrMoDDoM/MuHi/releases/download/v1.1/MuHi-v1.1.zip)
 
 ### Basic usange
 With the version 1.0, MuHi is now a stand alone application intended to be the "caller" of other application.
@@ -65,27 +65,31 @@ It sends keystroke based on eye status: the key is presed and released quikly, a
 As example application, the "Writer" is now a stand alone application too. It behaves exactly like in the 0.5 version, with the difference that now you have to different thread running.
 
 There also some command-line options:
-- -h             Print this help and exit
-- -d             Activate the debug mode: in this mode the source frame and some information are displayed
-- -s             Activate the streaimg mode: this way MuHi will continuosly output the status of eyes, and not only on change
-- -c NUM         Select the webcam index. 0 is normally the internal/default and 1 is the first USB cam connected.
-- -k XXXXXX      SIX and ONLY SIX charater to set as custom key sent on event. They stand for:
+- -h                 Print this help and exit
+- -p PATH_TO_PROGRAM The path to the target program: the system will lunch and attach to it
+- -nologo            Lunch the system without printing the logo
+- -i                 Send only eye's close state: the system will react only when only one or both eye are close
+- -l                 Long press the key: the virtual keystroke is released only on change
+- -d                 Activate the debug mode: in this mode the source frame and some information are displayed
+- -s                 Activate the streaimg mode: this way MuHi will continuosly output the status of eyes, and not only on change
+- -c NUM             Select the webcam index. 0 is normally the internal/default and 1 is the first USB cam connected.
+- -k XXXXXX          SIX and ONLY SIX charater to set as custom key sent on event. They stand for:
 --         FIRST:          Both eye are open
 --         SECOND:         Rigth eye is close, left is open
 --         THIRD:          Rigth eye is open, left is close
 --         FOURTH:         Both eye are close
 --         FIFTH:          Temporary error (e.g. face not found, wating frame, ecc)
 --         SIXTH:          Critical error, shut everything down.
- 
 
-This is how MuHi probably will interact with other application, and maybe with customizable key with different applications
-
-There are only few commands implemented so far:
-- ESC to esc the program (it now closes only one thread)
-- ~~D to activate the debug system, usefull to understand what the application sees~~ Debug mode is active by default 
-- +/- to increase or decrease the speed of the Writer's selector
-- ~~A/S to increase or decrease the sensibility to trigger~~ not implemented yet in the v1.0!
-- ~~C/V to increase or decrease the eye detection area threshold~~ not implemented yet in the v1.0!
+##EXAMPLE:
+```
+./MuHi -c 1 -p [PATH/TO/]notepad.exe
+```
+This will use the webcam with index 1 and activate the debug mode,lunching notepad.exe to work with
+```
+./MuHi -s -k asdfgh game.exe
+```
+This will set custom keys to "asdfgh", activate the streaming mode and lunch game.exe
 
 ### Writer test app
 The system uses the LEFT eye's blink to change the selector's direction, and the RIGHT eye's blink to make a "click"<br>
@@ -103,6 +107,16 @@ To delete the last charater, use "CANC" and to empty the output use "INVIO"<br>
 - [ ] API or a system to let other application/system to interact with (done in Linux)
 
 # Changelog 
+
+### v1.1
+- Thread support: MuHi is now able to lunch a target application and detect when it closes to shut down itself; this prevent MuHi to stay active and send random keystroke to random windows.
+- Reimplemented Windows support, but at this point MuHi doesn't support custom keybinding on Windows
+- With the "-i" switch is now possible to select only the "important" state changes (when from and open state the eye closes), which means the MuHi output only the second, third and fourth state.
+- Correct some bugs that prevent MuHi to sustain "long blinks".
+- With the "-l" switch the virtual key is held down insted of a quick press-and-release, even with "long blink".
+- The "-nologo" switch prevents MuHi to print the opening logo in the terminal
+- Bug fixes and stability improvments
+
 
 ### v1.0 - public beta
 - MuHi is now a stand alone application: it now sends keystroke (0-1-2-3-4) to the focused window
