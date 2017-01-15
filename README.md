@@ -1,6 +1,8 @@
 # <t>MuHi<br>                     
 ##<t>Multifunctionals E(/Hi)yes<br>
 
+![MuHi logo](http://i.imgur.com/WugbCuj.png)
+
    @author: Daniele Barattieri di San Pietro<br>
    @email : danielebarattieri[at]gmail.com<br>
    @copyright: 2016<br>
