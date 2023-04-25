@@ -16,26 +16,25 @@
   This Software is distribuited under the GNU/GPL license.<br>
   Fot more informations, please see the LICENSE and README file attached to the source code.
 
-MuHi makes possible to play a game, read a book, comunicate with others and generally use a pc with only the blink of the eyes: the numbers ( 0 - 1 - 2 - 3 ) corrispond to the eyes status, and MuHi acts like a virtual keyboard which sends virtual keystroke to the foreground application. 
+MuHi acts like a virtual keyboard which sends virtual keystroke to the foreground application, based on the eyes status (blink detection).
+This project makes it possible to play a game, read a book, communicate with others and generally use a pc with only the blink of the eyes.
 
 [![MuHi - Test](http://img.youtube.com/vi/SLFAlyaToa4/0.jpg)](https://www.youtube.com/watch?v=SLFAlyaToa4 "MuHi - Beta Test")
 
-### Games and Applications
+## Games and Applications
 **This is a call for you, designers!**
-I'm looking for (game) designers and developers to re-think common applications and games: as you may notice the main problem is to re-think the input system, using some hacks to make possible multiple interaction with only few inputs..!
-For example, take the classic Sudoku game using an input system similar to the one used in the writer demo application.<br>
-Now let's think about a program to draw, or something to read a ebook...<br>
-In future versions, I'm thinking to implement some sort of system to interact with mouse, but I am not sure about the usability for the final user: remeber that mouse and keyboard were designed to be used with hands, not eyes..<br>
+I'm looking for (game) designers and developers to rework common applications and games: as you may notice the main problem is to re-think the input system, using some hacks to make possible multiple interaction with only few inputs.
 
-With the hackerspace MuHack, we are hosting a separate repo for all your ideas and code: it is not important if you can or cannot code something, we need ideas!
+For example, take the classic Sudoku game using an input system similar to the one used in the writer demo application.
+Now let's think about a program to draw, or something to read an e-book...
 
-**At this moment we have problems with our hosting, just write me an email**
+In future versions, I'm thinking to implement some sort of system to interact with mouse, but I am not sure about the usability for the final user: remember that mouse and keyboard were designed to be used with hands, not eyes..
 
-## Installation & Usage
-**Requirements**
+## Requirements
 - opencv >= 2.4
 - (Linux) xdo >=3
 
+## Installation & Usage
 ### Linux
 We need OpenCV development library and XDoTool to compile and execute the program:
 ```
@@ -60,28 +59,35 @@ cd src/Writer/
 Just donwload & extract the zip file from [this link](https://github.com/MrMoDDoM/MuHi/releases/download/v1.1/MuHi-v1.1.zip)
 
 ### Basic usage
-With the version 1.1, MuHi is now a stand alone application intended to be the "caller" of other application.
-It sends keystroke based on eye status: the key is pressed and released quickly, and not held down.
-As example application, the "Writer" is now a stand alone application too. It behaves exactly like in the 0.5 version, with the difference that now you have two different threads running.
 
-There also some command-line options:
-- -h                 Print this help and exit
-- -p PATH_TO_PROGRAM The path to the target program: the MuHI system will lunch and attach to it
-- -nologo            Launch the system without printing the logo
-- -i                 Send only eye's close state: the system will react only when just one or both eye are close
-- -l                 Long press the key: the virtual keystroke is released only on changes
-- -d                 Activate the debug mode: in this mode the source frame and some information are displayed
-- -s                 Activate the streamig mode: this way MuHi will continuosly output the status of eyes, and not only on changes
-- -c NUM             Select the webcam index. 0 is normally the internal/default and 1 is the first USB cam connected.
-- -k XXXXXX          (LINUX ONLY) SIX and ONLY SIX charaters to set as custom key sent on event. They stand for:
+> Tips: stay in a well lighted room, with no makeup or object (hair or glasses) covering your face.
+
+With the version 1.1, MuHi is now a stand-alone application intended to be the "caller" of other application.
+
+It sends keystroke based on eye status: the key is pressed and released quickly, not held down.
+
+As example application, the "Writer" is now a stand-alone application too. It behaves exactly like in the 0.5 version, with the difference that now you have two different threads running.
+
+Command-line options:
+```
+-h                 Print this help and exit
+-p PATH_TO_PROGRAM The path to the target program: the MuHI system will lunch and attach to it
+-nologo            Launch the system without printing the logo
+-i                 Send only eye's close state: the system will react only when just one or both eye are close
+-l                 Long press the key: the virtual keystroke is released only on changes
+-d                 Activate the debug mode: in this mode the source frame and some information are displayed
+-s                 Activate the streamig mode: this way MuHi will continuosly output the status of eyes, and not only on changes
+-c NUM             Select the webcam index. 0 is normally the internal/default and 1 is the first USB cam connected.
+-k XXXXXX          (LINUX ONLY) SIX and ONLY SIX charaters to set as custom key sent on event. They stand for:
   * FIRST:          Both eyes are open
   * SECOND:         Rigth eye is close, left is open
   * THIRD:          Rigth eye is open, left is close
   * FOURTH:         Both eyes are close
   * FIFTH:          Temporary error (e.g. face not found, wating frame, ecc)
   * SIXTH:          Critical error, shut everything down.
+```
 
-##EXAMPLE:
+## Examples
 ```
 ./MuHi -c 1 -p [PATH/TO/]notepad.exe
 ```
@@ -92,12 +98,11 @@ This will use the webcam with index 1 and activate the debug mode, launching not
 This will set custom keys to "asdfgh", activate the streaming mode and launch game.exe
 
 ### Writer test app
-The system uses the LEFT eye's blink to change the selector's direction, and the RIGHT eye's blink to make a "click"<br>
-To pause or resume the writing process "click" on the "PAUSE" button<br>
-To delete the last charater, use "CANC" and to empty the output use "ENTER"<br>
+The system uses the LEFT eye's blink to change the selector's direction, and the RIGHT eye's blink to make a "click".
 
+To pause or resume the writing process "click" on the "PAUSE" button.
 
-**Tips & Tricks: stay in a well lighted room, with no makeup or object (hair or glasses) covering your face.** 
+To delete the last character, use "CANC" and to empty the output use "ENTER".
 
 ## To-Do
 - [x] Basic detection algorithm
@@ -109,14 +114,13 @@ To delete the last charater, use "CANC" and to empty the output use "ENTER"<br>
 # Changelog 
 
 ### v1.1
-- Thread support: MuHi is now able to launch a target application and detect when it closes to shut down itself; this prevent MuHi to stay active and send random keystrokes to random windows.
+- Thread support: MuHi is now able to launch a target application and detect when it closes to shut down itself; this prevents MuHi to stay active and send random keystrokes to random windows.
 - Reimplemented Windows support, but at this point MuHi doesn't support custom keybinding on Windows machines
 - With the "-i" switch is now possible to select only the "important" state changes (when from and open state the eye closes), which means the MuHi output only the second, third and fourth state.
 - Correct some bugs that prevent MuHi to sustain "long blinks".
-- With the "-l" switch the virtual key is held down insted of a quick press-and-release, even with "long blink".
+- With the "-l" switch the virtual key is held down instead of a quick press-and-release, even with "long blink".
 - The "-nologo" switch prevents MuHi to print the opening logo in the terminal
 - Bug fixes and stability improvements
-
 
 ### v1.0 - public beta
 - MuHi is now a stand alone application: it now sends keystroke (0-1-2-3-4) to the focused window
@@ -129,7 +133,7 @@ To delete the last charater, use "CANC" and to empty the output use "ENTER"<br>
 - Public beta
 - Added windows support
 - Bug fix
-- Speed improvment
+- Speed improvement
 
 ### v0.4
 - Added "YES/NO" button
@@ -138,13 +142,7 @@ To delete the last charater, use "CANC" and to empty the output use "ENTER"<br>
 ### v0.3
 - Project started
 
-# Contact
-```
-danielebarattieri#gmail.com
-```
-
 # Copyright
-
 
     This file is part of MuHi.
     Copyright (C) 2016  Daniele Barattieri di San Pietro
